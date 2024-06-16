@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fastest Interval Finder</title>
+</head>
+<body>
+    <h1>Fastest Interval Finder</h1>
+    <div>
+        Supply a Concept2 log CSV file (e.g., https://log.concept2.com/profile/&lt;profile ID&gt;/log/&lt;event ID&gt;/export/csv)
+        and an interval length (e.g., 500 m), and this page will compute the fastest pace you held for that distance.
+    </div>
+    <br/>
+    <input type="file" id="csvFile" accept=".csv">
+    <input type="number" id="targetDistance" placeholder="Enter target distance (meters)">
+    <button onclick="findFastestInterval()">Find Fastest Interval</button>
+    <br/>
+    <div id="result"></div>
+
+    <script>
+        function parseCSV(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const lines = reader.result.split('\n').slice(1).map(line => line.split(','));
+                    resolve(lines);
+                };
+                reader.onerror = () => reject(reader.error);
+                reader.readAsText(file);
+            });
+        }
+
+        function findFastestInterval() {
+            const fileInput = document.getElementById('csvFile');
+            const targetDistance = parseFloat(document.getElementById('targetDistance').value);
+            const resultElement = document.getElementById('result');
+
+            if (!fileInput.files.length) {
+                resultElement.textContent = "Please select a CSV file.";
+                return;
+            }
+
+            const file = fileInput.files[0];
+
+            parseCSV(file).then(data => {
+                let minTime = Infinity;
+                let minInterval = [null, null];
+
+                for (let i = 0; i < data.length; i++) {
+                    for (let j = i + 1; j < data.length; j++) {
+                        const distanceDiff = parseFloat(data[j][2]) - parseFloat(data[i][2]);
+                        if (distanceDiff >= targetDistance) {
+                            const timeDiff = parseFloat(data[j][1]) - parseFloat(data[i][1]);
+                            if (timeDiff < minTime) {
+                                minTime = timeDiff;
+                                minInterval = [parseInt(data[i][2]), parseInt(data[j][2])];
+                            }
+                            break; // Move to the next starting point once we've found a valid interval
+                        }
+                    }
+                }
+
+                if (minInterval[0] !== null && minInterval[1] !== null) {
+                    const startM = minInterval[0].toString().padStart(2, '0');
+                    const endM = minInterval[1].toString().padStart(2, '0');
+                    const formattedTime = minTime.toFixed(2);
+                    const pace = minTime/(minInterval[1]-minInterval[0])*500
+                    const pm = pace/60
+                    const ps = pace - pm * 60
+                    resultElement.textContent = `Fastest interval: ${startM}m - ${endM}m, time=${formattedTime}, pace=${pm}:${ps}`;
+                } else {
+                    resultElement.textContent = "No valid interval found.";
+                }
+            }).catch(error => {
+                resultElement.textContent = `Error reading the CSV file: ${error}`;
+            });
+        }
+    </script>
+</body>
+</html>
