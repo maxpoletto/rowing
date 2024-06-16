@@ -2,26 +2,58 @@
 <html>
 <head>
     <title>Fastest Interval Finder</title>
+    <style>
+        table {
+            width: 70%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: right; /* Center align text in all cells */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #targetDistances, #csvFile {
+            width: 25em;
+        }
+    </style>
 </head>
 <body>
     <h1>Fastest Interval Finder</h1>
-    <div>
-        Supply a Concept2 log CSV file (e.g., https://log.concept2.com/profile/&lt;profile ID&gt;/log/&lt;event ID&gt;/export/csv)
-        and an interval length (e.g., 500 m), and this page will compute the fastest pace you held for that distance.
+    <div style="width: 70%">
+        <p>
+            Supply a Concept2 log CSV file (e.g., https://log.concept2.com/profile/&lt;profile ID&gt;/log/&lt;event ID&gt;/export/csv)
+            and this page will compute the fastest pace you held for a variety of distances.
+        </p>
+        <p>
+            You can optionally specify one or more (comma-separated) distances if you don't like the defaults.
+        </p>
     </div>
-    <br/>
     <input type="file" id="csvFile" accept=".csv">
-    <input type="number" id="targetDistance" placeholder="Enter target distance (meters)">
-    <button onclick="findFastestInterval()">Find Fastest Interval</button>
+    <input type="text" id="targetDistances" placeholder="Optional target distances (comma-separated)">
     <br/>
-    <div id="result"></div>
+    <button style="margin-top: 5px" onclick="findFastestIntervals()">Find Fastest Intervals</button>
+    <table id="resultTable" border="1" style="margin-top: 10px">
+        <thead>
+            <tr>
+                <th>Distance (m)</th>
+                <th>Fastest Time (min:sec)</th>
+                <th>Position (m)</th>
+                <th>Average Pace per 500m (min:sec)</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 
     <script>
         function parseCSV(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
-                    const lines = reader.result.split('\n').slice(1).map(line => line.split(','));
+                    const lines = reader.result.split('\n').map(line => line.split(','));
                     resolve(lines);
                 };
                 reader.onerror = () => reject(reader.error);
@@ -29,49 +61,76 @@
             });
         }
 
-        function findFastestInterval() {
+        function secondsToMinutesSeconds(seconds) {
+            let minutes = Math.floor(seconds / 60);
+            let remainingSeconds = Math.round((seconds - minutes * 60)*10)/10;
+            if (remainingSeconds >= 60) {
+                minutes += 1;
+                remainingSeconds -= 60;
+            }
+            return `${minutes}:${remainingSeconds.toFixed(1).padStart(4, '0')}`;
+        }
+
+        function findFastestIntervals() {
             const fileInput = document.getElementById('csvFile');
-            const targetDistance = parseFloat(document.getElementById('targetDistance').value);
-            const resultElement = document.getElementById('result');
+            const targetDistancesInput = document.getElementById('targetDistances').value;
+            const resultTableBody = document.getElementById('resultTable').querySelector('tbody');
+            resultTableBody.innerHTML = ''; // Clear previous results
+
+            const defaultDistances = [100, 250, 500, 1000, 2000];
+            const targetDistances = targetDistancesInput
+                ? targetDistancesInput.split(',').map(Number)
+                : defaultDistances;
 
             if (!fileInput.files.length) {
-                resultElement.textContent = "Please select a CSV file.";
+                alert("Please select a CSV file.");
                 return;
             }
 
             const file = fileInput.files[0];
 
             parseCSV(file).then(data => {
-                let minTime = Infinity;
-                let minInterval = [null, null];
+                targetDistances.forEach(targetDistance => {
+                    let minTime = Infinity;
+                    let minInterval = [null, null];
 
-                for (let i = 0; i < data.length; i++) {
-                    for (let j = i + 1; j < data.length; j++) {
-                        const distanceDiff = parseFloat(data[j][2]) - parseFloat(data[i][2]);
-                        if (distanceDiff >= targetDistance) {
-                            const timeDiff = parseFloat(data[j][1]) - parseFloat(data[i][1]);
-                            if (timeDiff < minTime) {
-                                minTime = timeDiff;
-                                minInterval = [parseInt(data[i][2]), parseInt(data[j][2])];
+                    for (let i = 0; i < data.length; i++) {
+                        for (let j = i + 1; j < data.length; j++) {
+                            const distanceDiff = parseFloat(data[j][2]) - parseFloat(data[i][2]);
+                            if (distanceDiff >= targetDistance) {
+                                const timeDiff = parseFloat(data[j][1]) - parseFloat(data[i][1]);
+                                if (timeDiff < minTime) {
+                                    minTime = timeDiff;
+                                    minInterval = [parseFloat(data[i][2]), parseFloat(data[j][2])];
+                                }
+                                break; // Move to the next starting point once we've found a valid interval
                             }
-                            break; // Move to the next starting point once we've found a valid interval
                         }
                     }
-                }
 
-                if (minInterval[0] !== null && minInterval[1] !== null) {
-                    const startM = minInterval[0].toString().padStart(2, '0');
-                    const endM = minInterval[1].toString().padStart(2, '0');
-                    const formattedTime = minTime.toFixed(2);
-                    const pace = minTime/(minInterval[1]-minInterval[0])*500
-                    const pm = pace/60
-                    const ps = pace - pm * 60
-                    resultElement.textContent = `Fastest interval: ${startM}m - ${endM}m, time=${formattedTime}, pace=${pm}:${ps}`;
-                } else {
-                    resultElement.textContent = "No valid interval found.";
-                }
+                    const row = document.createElement('tr');
+                    const distanceCell = document.createElement('td');
+                    const timeCell = document.createElement('td');
+                    const positionCell = document.createElement('td');
+                    const paceCell = document.createElement('td');
+                    distanceCell.textContent = targetDistance;
+                    if (minInterval[0] !== null && minInterval[1] !== null) {
+                        timeCell.textContent = `${secondsToMinutesSeconds(minTime)}`
+                        positionCell.textContent = `${minInterval[0].toFixed(0)} m - ${minInterval[1].toFixed(0)} m`;
+                        paceCell.textContent = `${secondsToMinutesSeconds((minTime / targetDistance) * 500)}`;
+                    } else {
+                        timeCell.textContent = "No valid interval found";
+                        positionCell.textContent = "N/A";
+                        paceCell.textContent = "N/A";
+                    }
+                    row.appendChild(distanceCell);
+                    row.appendChild(timeCell);
+                    row.appendChild(positionCell);
+                    row.appendChild(paceCell);
+                    resultTableBody.appendChild(row);
+                });
             }).catch(error => {
-                resultElement.textContent = `Error reading the CSV file: ${error}`;
+                alert(`Error reading the CSV file: ${error}`);
             });
         }
     </script>
