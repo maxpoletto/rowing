@@ -19,6 +19,7 @@
             width: 25em;
         }
     </style>
+    <script src="./bundle.js"></script>
 </head>
 <body>
     <h1>Fastest Interval Finder</h1>
@@ -28,17 +29,18 @@
             Supported file formats:
         </p>
         <ul>
-            <li>GPX (it doesn't necessarily have to be a rowing activity)</li>
-            <li>Concept2 CSV export file (e.g., https://log.concept2.com/profile/&lt;profile_ID&gt;/log/&lt;event_ID&gt;/export/csv)</li>
+            <li>Concept2 CSV export file</li>
+            <li>FIT</li>
+            <li>GPX</li>
         </ul>
         <p>
-            Note that most GPX exports (from Strava, etc.) are less fine-grained than the C2 CSV and will lead to less precise results.
+            If available (e.g., from an erg log or from the CrewNerd phone app), the C2 CSV file provides the greatest accuracy.
         </p>
         <p>
             You can optionally specify one or more (comma-separated) distances if you don't like the defaults.
         </p>
     </div>
-    <input type="file" id="inputFile" accept=".csv, .CSV, .gpx, .GPX">
+    <input type="file" id="inputFile" accept=".csv,.fit,.gpx">
     <input type="text" id="targetDistances" placeholder="Optional target distances (comma-separated)">
     <br/>
     <button style="margin-top: 5px" onclick="findFastestIntervals()">Find Fastest Intervals</button>
@@ -65,6 +67,42 @@
                 };
                 reader.onerror = () => reject(reader.error);
                 reader.readAsText(file);
+            });
+        }
+
+        function parseFIT(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const fitParser = new FitParser({
+                        force: true,
+                        speedUnit: 'km/h',
+                        lengthUnit: 'm',
+                        temperatureUnit: 'celsius',
+                        elapsedRecordField: true,
+                        mode: 'both',
+                    });
+
+                    fitParser.parse(reader.result, (error, data) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            const records = data.records;
+                            const parsedData = [];
+                            let totalDistance = 0;
+
+                            for (let i = 0; i < records.length; i++) {
+                                const record = records[i];
+                                const time = new Date(record.timestamp).getTime() / 1000;
+                                const distance = record.distance;
+                                parsedData.push([i, time, distance]);
+                            }
+                            resolve(parsedData);
+                        }
+                    });
+                };
+                reader.onerror = () => reject(reader.error);
+                reader.readAsArrayBuffer(file);
             });
         }
 
@@ -133,14 +171,16 @@
             let parseFile;
             if (fileType === 'csv') {
                 parseFile = parseCSV(file);
+            } else if (fileType === 'fit') {
+                parseFile = parseFIT(file);
             } else if (fileType === 'gpx') {
                 parseFile = parseGPX(file);
             } else {
-                alert("Unsupported file format. Please upload a CSV or GPX file.");
+                alert("Unsupported file format. Please upload a CSV, FIT, or GPX file.");
                 return;
             }
-
             parseFile.then(data => {
+                console.log(data);
                 targetDistances.forEach(targetDistance => {
                     let minTime = Infinity;
                     let minInterval = [null, null];
