@@ -24,8 +24,15 @@
     <h1>Fastest Interval Finder</h1>
     <div style="width: 70%">
         <p>
-            Supply a Concept2 log CSV file (e.g., https://log.concept2.com/profile/&lt;profile ID&gt;/log/&lt;event ID&gt;/export/csv)
-            and this page will compute the fastest pace you held for a variety of distances.
+            Upload an activity log file and this page will compute the fastest pace you held for a variety of distances.
+            Supported file formats:
+        </p>
+        <ul>
+            <li>GPX (it doesn't necessarily have to be a rowing activity)</li>
+            <li>Concept2 CSV export file (e.g., https://log.concept2.com/profile/&lt;profile_ID&gt;/log/&lt;event_ID&gt;/export/csv)</li>
+        </ul>
+        <p>
+            Note that most GPX exports (from Strava, etc.) are less fine-grained than the C2 CSV and will lead to less precise results.
         </p>
         <p>
             You can optionally specify one or more (comma-separated) distances if you don't like the defaults.
