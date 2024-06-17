@@ -31,7 +31,7 @@
             You can optionally specify one or more (comma-separated) distances if you don't like the defaults.
         </p>
     </div>
-    <input type="file" id="csvFile" accept=".csv">
+    <input type="file" id="csvFile" accept=".csv, .CSV, .gpx, .GPX">
     <input type="text" id="targetDistances" placeholder="Optional target distances (comma-separated)">
     <br/>
     <button style="margin-top: 5px" onclick="findFastestIntervals()">Find Fastest Intervals</button>
@@ -53,13 +53,46 @@
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
-                    const lines = reader.result.split('\n').map(line => line.split(','));
+                    const lines = reader.result.split('\n').map(line => line.split(',').map(s => parseFloat(s)));
                     resolve(lines);
                 };
                 reader.onerror = () => reject(reader.error);
                 reader.readAsText(file);
             });
         }
+
+        function parseGPX(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(reader.result, "application/xml");
+                    const trkpts = xmlDoc.getElementsByTagName("trkpt");
+                    const data = [];
+                    let lat1, lon1;
+                    Array.from(trkpts).forEach((trkpt, index) => {
+                        const time = new Date(trkpt.getElementsByTagName("time")[0].textContent).getTime() / 1000;
+                        const lat2 = parseFloat(trkpt.getAttribute("lat")) * Math.PI / 180;
+                        const lon2 = parseFloat(trkpt.getAttribute("lon")) * Math.PI / 180;
+                        // Haversine formula to calculate distance between points:
+                        // https://en.wikipedia.org/wiki/Haversine_formula
+                        if (index > 0) {
+                            const R = 6371000; // Radius of Earth in meters
+                            const a = 1 - Math.cos(lat2-lat1) + Math.cos(lat1) * Math.cos(lat2) * (1 - Math.cos(lon2-lon1));
+                            const dist = 2 * R * Math.asin(Math.sqrt(a / 2));
+                            data.push([index, time, data[index - 1][2] + dist]);
+                        } else {
+                            data.push([index, time, 0]);
+                        }
+                        [lat1, lon1] = [lat2, lon2];
+                    });
+                    resolve(data);
+                };
+                reader.onerror = () => reject(reader.error);
+                reader.readAsText(file);
+            });
+        }
+
 
         function secondsToMinutesSeconds(seconds) {
             let minutes = Math.floor(seconds / 60);
@@ -88,20 +121,31 @@
             }
 
             const file = fileInput.files[0];
+            const fileType = file.name.split('.').pop().toLowerCase();
 
-            parseCSV(file).then(data => {
+            let parseFile;
+            if (fileType === 'csv') {
+                parseFile = parseCSV(file);
+            } else if (fileType === 'gpx') {
+                parseFile = parseGPX(file);
+            } else {
+                alert("Unsupported file format. Please upload a CSV or GPX file.");
+                return;
+            }
+
+            parseFile.then(data => {
                 targetDistances.forEach(targetDistance => {
                     let minTime = Infinity;
                     let minInterval = [null, null];
 
                     for (let i = 0; i < data.length; i++) {
                         for (let j = i + 1; j < data.length; j++) {
-                            const distanceDiff = parseFloat(data[j][2]) - parseFloat(data[i][2]);
+                            const distanceDiff = data[j][2] - data[i][2];
                             if (distanceDiff >= targetDistance) {
-                                const timeDiff = parseFloat(data[j][1]) - parseFloat(data[i][1]);
+                                const timeDiff = data[j][1] - data[i][1];
                                 if (timeDiff < minTime) {
                                     minTime = timeDiff;
-                                    minInterval = [parseFloat(data[i][2]), parseFloat(data[j][2])];
+                                    minInterval = [data[i][2], data[j][2]];
                                 }
                                 break; // Move to the next starting point once we've found a valid interval
                             }
