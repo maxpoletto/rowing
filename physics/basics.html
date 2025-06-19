@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Physics of Rowing - Physics of Rowing</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/content.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title"><a href="index.html">Physics of Rowing</a></h1>
+            <nav class="main-nav">
+                <ul class="nav-list">
+                    <li><a href="index.html#basics">Basics</a></li>
+                    <li><a href="index.html#weight">Weight & Power</a></li>
+                    <li><a href="index.html#water">Water & Flow</a></li>
+                    <li><a href="index.html#ergometers">Ergometers</a></li>
+                    <li><a href="index.html#references">References</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a> → <span>Basic Physics</span>
+            </nav>
+
+            <article class="content-article">
+                <header class="article-header">
+                    <h1>Basic Physics of Rowing</h1>
+                    <p class="article-intro">
+                        Understanding the fundamental physics principles that govern rowing mechanics, 
+                        from propulsion and resistance to boat dynamics and energy efficiency.
+                    </p>
+                </header>
+
+                <nav class="table-of-contents">
+                    <h2>Contents</h2>
+                    <ul>
+                        <li><a href="#propulsion">Propulsion</a></li>
+                        <li><a href="#resistance">Resistance</a></li>
+                        <li><a href="#kinetic-energy">Kinetic Energy</a></li>
+                        <li><a href="#centre-of-mass">Centre of Mass</a></li>
+                        <li><a href="#speed-variation">Speed Variation</a></li>
+                        <li><a href="#balance">Balance</a></li>
+                        <li><a href="#levers">Levers</a></li>
+                        <li><a href="#gearing">Gearing</a></li>
+                    </ul>
+                </nav>
+
+                <section id="propulsion" class="content-section">
+                    <h2>1. Propulsion</h2>
+<div class="concept-explanation">
+                       <h3>Why does the blade have to slip in the water?</h3>
+                       
+                       <p>Consider a boat before and after a stroke. Before the stroke, total momentum p = 0, since everything is at rest. After the stroke, total momentum must still equal zero because the total momentum can't change (Newton's 2nd Law).</p>
+
+                       <div class="equation-box">
+                           <p><strong>Conservation of Momentum:</strong></p>
+                           <p>Total momentum: p = m<sub>b</sub>v<sub>b</sub> - m<sub>w</sub>v<sub>w</sub> = 0</p>
+                           <p>Where: m<sub>b</sub> = boat+crew mass, v<sub>b</sub> = boat velocity, m<sub>w</sub> = water mass, v<sub>w</sub> = water velocity</p>
+                       </div>
+
+                       <div class="example-box">
+                           <h4>Example</h4>
+                           <p>For a boat+crew mass m<sub>b</sub> = 100 kg (single sculler) to accelerate from rest to v<sub>b</sub> = 1 m/s, requires either:</p>
+                           <ul>
+                               <li>m<sub>w</sub> = 10 kg water accelerated to v<sub>w</sub> = 10 m/s, or</li>
+                               <li>m<sub>w</sub> = 20 kg water accelerated to v<sub>w</sub> = 5 m/s</li>
+                           </ul>
+                           <p>Any combination where m<sub>w</sub>v<sub>w</sub> = m<sub>b</sub>v<sub>b</sub> = 100 kg⋅m/s works.</p>
+                       </div>
+
+                       <p>During the normal stroke with the boat already moving, it's less obvious that water moves backwards to keep the boat moving forwards since the blades appear to 'lock' where they're placed. However, if you look at the puddles when blades are extracted, it's clear that water is moved.</p>
+
+                       <p><strong>There has to be some slippage to accelerate the boat</strong>, although from energy considerations this should be minimized.</p>
+
+                       <div class="note-box">
+                           <p><strong>Note:</strong> If you could push off the river bottom or poles along the bank instead of water, the whole planet would move backwards instead, and some slippage would still occur (detectable by a very pedantic spaceman with precise measuring equipment).</p>
+                       </div>
+                   </div>
+               </section>
+
+               <section id="resistance" class="content-section">
+                   <h2>2. Resistance</h2>
+
+                   <div class="concept-explanation">
+                       <h3>What causes a boat to slow down?</h3>
+
+                       <p>Bodies moving in fluids slow down due to resistive forces known as <strong>drag</strong>. This represents a transfer of momentum from the body to the fluid: the surrounding fluid speeds up as the body slows down, maintaining constant total momentum.</p>
+
+                       <div class="info-grid">
+                           <div class="info-card">
+                               <h4>Types of Drag for Boats</h4>
+                               <ul>
+                                   <li><strong>Skin Drag:</strong> Friction between hull and water (≈80% for racing shells)</li>
+                                   <li><strong>Form Drag:</strong> Turbulence from hull passage</li>
+                                   <li><strong>Wave Drag:</strong> Energy lost creating waves</li>
+                               </ul>
+                           </div>
+                           <div class="info-card">
+                               <h4>Air Resistance</h4>
+                               <ul>
+                                   <li>Few % in still air</li>
+                                   <li>Can rise to 10s of % in strong headwinds</li>
+                                   <li>Much more variable than water resistance</li>
+                               </ul>
+                           </div>
+                       </div>
+
+                       <h3>Why don't you go twice as fast if you pull twice as hard?</h3>
+
+                       <p>Skin drag is proportional to the square of velocity. Assuming skin drag dominates:</p>
+
+                       <div class="equation-box">
+                           <p><strong>Resistance Formula:</strong></p>
+                           <p>R = a⋅v²</p>
+                           <p>Where R = resistance, v = velocity, a = constant (depends on wetted surface area and hull shape)</p>
+                       </div>
+
+                       <p>To maintain constant velocity, applied force must equal resistance (Newton's 1st Law). Therefore, average power required is:</p>
+
+                       <div class="equation-box">
+                           <p><strong>Power Formula:</strong></p>
+                           <p>P = a⋅v³</p>
+                           <p>Power = Force × velocity = R × v = a⋅v² × v = a⋅v³</p>
+                       </div>
+
+                       <div class="key-insight">
+                           <h4>Key Insight</h4>
+                           <p><strong>To double boat speed, you need 2³ = 8 times more power.</strong></p>
+                           <p><strong>If you double power, you only go 2^(1/3) = 1.26 times as fast.</strong></p>
+                           <p>This is why rowing firm pressure doesn't get you past a crew rowing light pressure as quickly as you'd hope.</p>
+                       </div>
+                   </div>
+               </section>
+
+               <section id="kinetic-energy" class="content-section">
+                   <h2>3. Kinetic Energy</h2>
+
+                   <div class="concept-explanation">
+                       <h3>Why are 'cleavers' a good idea?</h3>
+
+                       <p>From the propulsion example, both scenarios achieve the same boat speed, but they require different amounts of energy. The total kinetic energy of the system is:</p>
+
+                       <div class="equation-box">
+                           <p>U = ½m<sub>b</sub>v<sub>b</sub>² + ½m<sub>w</sub>v<sub>w</sub>²</p>
+                       </div>
+
+                       <div class="comparison-table">
+                           <table>
+                               <thead>
+                                   <tr>
+                                       <th>Scenario</th>
+                                       <th>Water Mass</th>
+                                       <th>Water Velocity</th>
+                                       <th>Total Energy</th>
+                                   </tr>
+                               </thead>
+                               <tbody>
+                                   <tr>
+                                       <td>Small blade, fast water</td>
+                                       <td>10 kg</td>
+                                       <td>10 m/s</td>
+                                       <td>550 Joules</td>
+                                   </tr>
+                                   <tr>
+                                       <td>Large blade, slow water</td>
+                                       <td>20 kg</td>
+                                       <td>5 m/s</td>
+                                       <td>300 Joules</td>
+                                   </tr>
+                               </tbody>
+                           </table>
+                       </div>
+
+                       <div class="key-insight">
+                           <h4>Energy Efficiency Principle</h4>
+                           <p><strong>To achieve a given increase in boat speed, it takes less energy to move a large amount of water slowly than a small amount of water quickly.</strong></p>
+                           <p>This is the basic argument in favor of 'bigger is better' spoon sizes and for not washing out.</p>
+                       </div>
+                   </div>
+               </section>
+
+               <section id="centre-of-mass" class="content-section">
+                   <h2>4. Centre of Mass</h2>
+
+                   <div class="concept-explanation">
+                       <h3>Why do boats continue to accelerate after the stroke ends?</h3>
+
+                       <p>If a crew (mass m<sub>c</sub>) sits still at backstops in a boat (mass m<sub>b</sub>) moving at velocity v<sub>t</sub>, the total momentum is (m<sub>c</sub> + m<sub>b</sub>)v<sub>t</sub>.</p>
+
+                       <p>When the crew moves sternwards at velocity -v<sub>c</sub> relative to the boat, the boat must move bowwards at velocity v<sub>b</sub> to conserve momentum:</p>
+
+                       <div class="equation-box">
+                           <p>m<sub>c</sub>v<sub>t</sub> + m<sub>b</sub>v<sub>t</sub> = m<sub>c</sub>(v<sub>t</sub> - v<sub>c</sub>) + m<sub>b</sub>(v<sub>t</sub> + v<sub>b</sub>)</p>
+                           <p>Simplifying: m<sub>c</sub>v<sub>c</sub> = m<sub>b</sub>v<sub>b</sub></p>
+                       </div>
+
+                       <div class="example-box">
+                           <h4>Practical Example</h4>
+                           <p>If the crew is 80% of total mass (m<sub>c</sub> = 4m<sub>b</sub>), then v<sub>b</sub> = 4v<sub>c</sub>.</p>
+                           <p>If crew moves sternwards at v<sub>c</sub> = 0.2 m/s, the boat moves bowwards an extra 0.8 m/s.</p>
+                           <p>In 1 second: to the crew, they've moved 1m toward stern; to an observer, 80cm was the boat moving toward the crew.</p>
+                       </div>
+
+                       <div class="key-insight">
+                           <h4>Why Boats Surge After Finish</h4>
+                           <p>Although blades have been extracted and no longer accelerate the system's center of mass, the crew's movement off backstops accelerates the hull forwards by equal and opposite reaction.</p>
+                       </div>
+                   </div>
+               </section>
+
+               <section id="speed-variation" class="content-section">
+                   <h2>5. Speed Variation</h2>
+
+                   <div class="concept-explanation">
+                       <h3>Why is constant pace more efficient?</h3>
+
+                       <p>Consider rowing 1 minute at 4 m/s, then 1 minute at 6 m/s versus 2 minutes at constant 5 m/s. Both cover 600m total distance.</p>
+
+                       <div class="calculation-box">
+                           <h4>Variable Speed (4 m/s then 6 m/s)</h4>
+                           <p>Using P = av³ with a = 1 kg/m for simple calculation:</p>
+                           <p>Total work = 60 × 4³ + 60 × 6³ = 60 × 64 + 60 × 216 = 16,800 Joules</p>
+                           <p>Average power = 140 Watts</p>
+                       </div>
+
+                       <div class="calculation-box">
+                           <h4>Constant Speed (5 m/s)</h4>
+                           <p>Total work = 60 × 5³ + 60 × 5³ = 2 × 60 × 125 = 15,000 Joules</p>
+                           <p>Average power = 125 Watts</p>
+                       </div>
+
+                       <div class="key-insight">
+                           <h4>Efficiency Principle</h4>
+                           <p><strong>Constant pace uses less average power (15% less in this example) to cover the same distance in the same time.</strong></p>
+                           <p>It's more energy-efficient to maintain the same pace throughout a race rather than starting fast and slowing down, or starting slow and speeding up.</p>
+                       </div>
+
+                       <h3>Hull Speed Variation During Stroke</h3>
+
+                       <p>The same principle applies to hull speed variation during each stroke. Since skin drag resistance depends on hull speed rather than center-of-mass speed, minimizing hull speed variation throughout the stroke is more efficient.</p>
+
+                       <div class="note-box">
+                           <p><strong>Sliding Rigger Boats:</strong> These were banned because they reduced hull speed variation (sculler's seat fixed to hull, stretcher and riggers slide), making them theoretically more efficient. The theory presumably worked since they're now prohibited.</p>
+                       </div>
+                   </div>
+               </section>
+           </article>
+       </div>
+   </main>
+
+   <footer class="site-footer">
+       <div class="container">
+           <div class="footer-content">
+               <div class="copyright-notice">
+                   <p><strong>Note:</strong> None of the information on this site is copyrighted. Feel free to reproduce any or all of it, credited or uncredited as you see fit.</p>
+               </div>
+               <div class="contact">
+                   <p>Anu Dudhia (<a href="mailto:dudhia@atm.ox.ac.uk">dudhia@atm.ox.ac.uk</a>)</p>
+               </div>
+           </div>
+       </div>
+   </footer>
+</body>
+</html>

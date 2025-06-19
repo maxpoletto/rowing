@@ -1,0 +1,288 @@
+/* Content-specific styles */
+
+.breadcrumb {
+    margin-bottom: var(--spacing-xl);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.breadcrumb a {
+    color: var(--accent-color);
+}
+
+.content-article {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.article-header {
+    text-align: center;
+    margin-bottom: var(--spacing-3xl);
+}
+
+.article-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+.article-intro {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Table of Contents */
+.table-of-contents {
+    background-color: var(--background-secondary);
+    padding: var(--spacing-xl);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-2xl);
+    border-left: 4px solid var(--accent-color);
+}
+
+.table-of-contents h2 {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+    font-size: 1.25rem;
+}
+
+.table-of-contents ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.table-of-contents a {
+    display: block;
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s ease;
+}
+
+.table-of-contents a:hover {
+    background-color: var(--background-primary);
+    text-decoration: none;
+}
+
+/* Content Sections */
+.content-section {
+    margin-bottom: var(--spacing-3xl);
+    scroll-margin-top: 100px; /* Account for sticky header */
+}
+
+.content-section h2 {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+}
+
+.content-section h3 {
+    color: var(--secondary-color);
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+}
+
+.content-section h4 {
+    color: var(--primary-color);
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
+}
+
+.content-section p {
+    margin-bottom: var(--spacing-md);
+    line-height: 1.7;
+}
+
+.content-section ul, .content-section ol {
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-xl);
+}
+
+.content-section li {
+    margin-bottom: var(--spacing-xs);
+    line-height: 1.6;
+}
+
+/* Special Content Boxes */
+.equation-box {
+    background-color: #f8f9ff;
+    border: 1px solid #e1e5f2;
+    border-left: 4px solid var(--accent-color);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+    border-radius: var(--border-radius);
+    font-family: var(--font-family-mono);
+}
+
+.equation-box p {
+    margin-bottom: var(--spacing-sm);
+}
+
+.equation-box p:last-child {
+    margin-bottom: 0;
+}
+
+.example-box {
+    background-color: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-left: 4px solid #0ea5e9;
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+    border-radius: var(--border-radius);
+}
+
+.example-box h4 {
+    color: #0369a1;
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+}
+
+.note-box {
+    background-color: #fffbeb;
+    border: 1px solid #fed7aa;
+    border-left: 4px solid #f59e0b;
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+    border-radius: var(--border-radius);
+}
+
+.key-insight {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+    border-radius: var(--border-radius);
+}
+
+.key-insight h4 {
+    color: #15803d;
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+}
+
+.calculation-box {
+    background-color: #fdf4ff;
+    border: 1px solid #e9d5ff;
+    border-left: 4px solid #a855f7;
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+    border-radius: var(--border-radius);
+}
+
+.calculation-box h4 {
+    color: #7c3aed;
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+}
+
+.info-card {
+    background-color: var(--background-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.info-card h4 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+}
+
+.info-card ul {
+    margin-bottom: 0;
+}
+
+/* Comparison Table */
+.comparison-table {
+    margin: var(--spacing-lg) 0;
+    overflow-x: auto;
+}
+
+.comparison-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--background-primary);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.comparison-table th {
+    background-color: var(--background-secondary);
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.comparison-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Concept Explanation */
+.concept-explanation {
+    line-height: 1.7;
+}
+
+/* Responsive adjustments for content */
+@media (max-width: 768px) {
+    .content-article {
+        margin: 0;
+    }
+    
+    .article-header h1 {
+        font-size: 2rem;
+    }
+    
+    .article-intro {
+        font-size: 1.125rem;
+    }
+    
+    .table-of-contents ul {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .equation-box,
+    .example-box,
+    .note-box,
+    .key-insight,
+    .calculation-box {
+        margin-left: calc(-1 * var(--spacing-sm));
+        margin-right: calc(-1 * var(--spacing-sm));
+    }
+}
+
+@media (max-width: 480px) {
+    .comparison-table {
+        margin-left: calc(-1 * var(--spacing-sm));
+        margin-right: calc(-1 * var(--spacing-sm));
+    }
+    
+    .comparison-table th,
+    .comparison-table td {
+        padding: var(--spacing-sm);
+        font-size: 0.875rem;
+    }
+}
