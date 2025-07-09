@@ -11,12 +11,14 @@
 
 <body>
     <div id="main-container">
-        <h1>Geschichte des Preises der Ehrenmitglieder</h1>
+        <h1>History of the <em>Preis der Ehrenmitglieder</em><br/>(Best club at the Swiss National Rowing Championships)</h1>
+        <p>For rules and other information, see <a href="https://www.swissrowing.ch/de/events/schweizer-meisterschaften/preis-der-ehrenmitglieder">Swiss Rowing</a>.</p>
+        <p>Click on or hover over any of the lines, or click one or more of the club buttons.</p>
         <div id="chart"></div>
         <div id="controls"></div>
     </div>
     <script>
-        const margin = { top: 30, right: 300, bottom: 60, left: 80 };
+        const margin = { top: 30, right: 150, bottom: 60, left: 80 };
 
         function getChartDimensions() {
             const containerWidth = document.getElementById('chart').offsetWidth;
@@ -35,6 +37,7 @@
             .attr("height", height + margin.top + margin.bottom)
             .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
             .attr("preserveAspectRatio", "xMidYMid meet")
+            .style("overflow", "visible")
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -48,13 +51,22 @@
             // Convert string values to numbers and restructure data
             const processedData = data.map(d => ({
                 year: +d["Year"],
-                club: d["Club"],
+                club: d["ClubShortName"],
+                clublong: d["ClubLongName"],
                 points: +d["Points"]
             }));
 
             // Get unique years and clubs
             const years = [...new Set(processedData.map(d => d.year))].sort();
             const clubs = [...new Set(processedData.map(d => d.club))].sort();
+
+            // Create mapping from short names to long names
+            const clubLongNames = new Map();
+            processedData.forEach(d => {
+                if (!clubLongNames.has(d.club)) {
+                    clubLongNames.set(d.club, d.clublong);
+                }
+            });
 
             // Create nested data structure (one array per club)
             const dataByClub = clubs.map(club => {
@@ -119,12 +131,12 @@
                 .attr("y", 0 - margin.left)
                 .attr("x", 0 - (height / 2))
                 .attr("dy", "1em")
-                .text("Punkte");
+                .text("Points");
 
             svg.append("text")
                 .attr("class", "axis-label x-axis-label")
                 .attr("transform", `translate(${width / 2}, ${height + margin.bottom - 10})`)
-                .text("Jahr");
+                .text("Year");
 
             // Draw lines
             const lines = svg.selectAll(".line")
@@ -248,7 +260,7 @@
             const controlsDiv = d3.select("#controls");
             const buttonsPerRow = 8;
 
-            controlsDiv.append("h3").text("Ruderclubs:");
+            controlsDiv.append("h3").text("Clubs:");
 
             const buttonGrid = controlsDiv.append("div")
                 .attr("class", "button-grid");
@@ -258,7 +270,7 @@
                 .enter().append("button")
                 .attr("class", "club-button")
                 .style("background-color", d => colorScale(d))
-                .text(d => d)
+                .text(d => clubLongNames.get(d))
                 .on("click", function (event, d) {
                     toggleClub(d);
                 })
