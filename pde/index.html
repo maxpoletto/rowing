@@ -222,17 +222,13 @@
 
             // Add line interactions
             lines.on("mouseover", function (event, d) {
-                if (!selectedClubs.has(d.club)) {
-                    tooltip.transition().duration(200).style("opacity", 0.9);
-                    tooltip.html(d.club)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 28) + "px");
-                }
+                tooltip.transition().duration(200).style("opacity", 0.9);
+                tooltip.html(d.club)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
             })
                 .on("mouseout", function (event, d) {
-                    if (!selectedClubs.has(d.club)) {
-                        tooltip.transition().duration(500).style("opacity", 0);
-                    }
+                    tooltip.transition().duration(500).style("opacity", 0);
                 })
                 .on("click", function (event, d) {
                     event.stopPropagation();
@@ -242,17 +238,13 @@
             // Add point interactions
             points.selectAll(".dot")
                 .on("mouseover", function (event, d) {
-                    if (!selectedClubs.has(d.club)) {
-                        tooltip.transition().duration(200).style("opacity", 0.9);
-                        tooltip.html(`${d.club}<br/>${d.year}: ${d.points} Punkte`)
-                            .style("left", (event.pageX + 10) + "px")
-                            .style("top", (event.pageY - 28) + "px");
-                    }
+                    tooltip.transition().duration(200).style("opacity", 0.9);
+                    tooltip.html(`${d.club}<br/>${d.year}: ${d.points} Punkte`)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 28) + "px");
                 })
                 .on("mouseout", function (event, d) {
-                    if (!selectedClubs.has(d.club)) {
-                        tooltip.transition().duration(500).style("opacity", 0);
-                    }
+                    tooltip.transition().duration(500).style("opacity", 0);
                 })
                 .on("click", function (event, d) {
                     event.stopPropagation();
