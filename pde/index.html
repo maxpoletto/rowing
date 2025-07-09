@@ -15,8 +15,11 @@
             <h1>History of the <em>Preis der Ehrenmitglieder</em></h1>
             <p class="subtitle">(Best club at the Swiss National Rowing Championships)</p>
             <div class="info-section">
-                <p>For rules and other information, see <a href="https://www.swissrowing.ch/de/events/schweizer-meisterschaften/preis-der-ehrenmitglieder" target="_blank">Swiss Rowing</a>.</p>
-                <p class="instructions">Click on or hover over any of the lines, or click one or more of the club buttons below.</p>
+                <p>For rules and other information, see <a
+                        href="https://www.swissrowing.ch/de/events/schweizer-meisterschaften/preis-der-ehrenmitglieder"
+                        target="_blank">Swiss Rowing</a>.</p>
+                <p class="instructions">Click on or hover over any of the lines, or click one or more of the club
+                    buttons below.</p>
             </div>
         </header>
         <div id="chart"></div>
@@ -56,7 +59,6 @@
         let selectedClubs = new Set();
 
         d3.csv("pde-history.csv").then(function (data) {
-            // Convert string values to numbers and restructure data
             const processedData = data.map(d => ({
                 year: +d["Year"],
                 club: d["ClubShortName"],
@@ -76,7 +78,7 @@
                 }
             });
 
-            // Create nested data structure (one array per club)
+            // Assemble annual point data by club
             const dataByClub = clubs.map(club => {
                 const clubData = years.map(year => {
                     const yearData = processedData.find(d => d.club === club && d.year === year);
@@ -251,42 +253,6 @@
                     toggleClub(d.club);
                 });
 
-            // Create club buttons
-            const controlsDiv = d3.select("#controls");
-            const buttonsPerRow = 8;
-
-            controlsDiv.append("h3").text("Clubs:");
-
-            const buttonGrid = controlsDiv.append("div")
-                .attr("class", "button-grid");
-
-            const buttons = buttonGrid.selectAll(".club-button")
-                .data(clubs)
-                .enter().append("button")
-                .attr("class", "club-button")
-                .style("background-color", d => colorScale(d))
-                .text(d => clubLongNames.get(d))
-                .on("click", function (event, d) {
-                    toggleClub(d);
-                })
-                .on("mouseover", function (event, d) {
-                    if (!selectedClubs.has(d)) {
-                        d3.select(this).style("opacity", 0.8);
-                    }
-                })
-                .on("mouseout", function (event, d) {
-                    if (!selectedClubs.has(d)) {
-                        d3.select(this).style("opacity", 1);
-                    }
-                });
-
-            d3.select("#clear-selection").on("click", function () {
-                selectedClubs.clear();
-                updateSelection();
-                tooltip.transition().duration(500).style("opacity", 0);
-            });
-
-            // Resize function
             function resizeChart() {
                 const newDimensions = getChartDimensions();
                 width = newDimensions.width;
@@ -324,9 +290,42 @@
                 // Update permanent tooltips
                 updatePermanentTooltips();
             }
-
-            // Add resize event listener
             window.addEventListener('resize', resizeChart);
+
+            // Create club buttons
+            const controlsDiv = d3.select("#controls");
+            const buttonsPerRow = 8;
+
+            controlsDiv.append("h3").text("Clubs:");
+
+            const buttonGrid = controlsDiv.append("div")
+                .attr("class", "button-grid");
+
+            const buttons = buttonGrid.selectAll(".club-button")
+                .data(clubs)
+                .enter().append("button")
+                .attr("class", "club-button")
+                .style("background-color", d => colorScale(d))
+                .text(d => clubLongNames.get(d))
+                .on("click", function (event, d) {
+                    toggleClub(d);
+                })
+                .on("mouseover", function (event, d) {
+                    if (!selectedClubs.has(d)) {
+                        d3.select(this).style("opacity", 0.8);
+                    }
+                })
+                .on("mouseout", function (event, d) {
+                    if (!selectedClubs.has(d)) {
+                        d3.select(this).style("opacity", 1);
+                    }
+                });
+
+            d3.select("#clear-selection").on("click", function () {
+                selectedClubs.clear();
+                updateSelection();
+                tooltip.transition().duration(500).style("opacity", 0);
+            });
         });
     </script>
 </body>
