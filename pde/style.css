@@ -1,0 +1,131 @@
+body {
+    font-family: Gill-Sans, Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #fefefe;
+}
+
+#chart {
+    margin: 0 auto 30px auto;
+    max-width: 1600px;
+}
+
+#controls {
+    margin: 0 auto;
+    max-width: 1600px;
+}
+
+.line {
+    stroke-width: 2;
+    fill: none;
+    cursor: pointer;
+}
+
+.line:hover {
+    stroke-width: 3;
+}
+
+.dot {
+    cursor: pointer;
+}
+
+.dot:hover {
+    stroke-width: 3;
+}
+
+.x-axis, .y-axis {
+    stroke: #333;
+}
+
+.x-axis text, .y-axis text {
+    font-size: 14px;
+    font-weight: 100;
+    fill: #333;
+}
+
+.axis-label {
+    font-size: 16px;
+    font-weight: 100;
+    fill: #333;
+    text-anchor: middle;
+}
+
+.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.permanent-tooltip {
+    pointer-events: none;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    margin-top: 15px;
+    max-width: 1200px;
+}
+
+.club-button {
+    padding: 5px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    height: 65px;
+    font-size: 14px;
+    font-weight: normal;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.club-button:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.club-button.selected {
+    border-color: #000;
+    border-width: 3px;
+    color: #000;
+    font-weight: bold;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.club-button.selected:hover {
+    opacity: 1;
+}
+
+h1 {
+    color: #555;
+    font-size: 36px;
+    font-weight: 400;
+    text-align: center;
+}
+
+h3 {
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+/* Clean grid lines */
+.tick line {
+    stroke: #e0e0e0;
+}
+
+.domain {
+    stroke: #333;
+}
+

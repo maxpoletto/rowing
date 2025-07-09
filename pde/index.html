@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geschichte des Preises der Ehrenmitglieder</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <h1>Geschichte des Preises der Ehrenmitglieder</h1>
+    <div id="chart"></div>
+    <div id="controls"></div>
+    <script>
+        const margin = {top: 30, right: 300, bottom: 60, left: 80};
+        const width = 1500 - margin.left - margin.right;
+        const height = 750 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        let selectedClubs = new Set();
+
+        d3.csv("pde-history.csv").then(function(data) {
+            // Convert string values to numbers and restructure data
+            const processedData = data.map(d => ({
+                year: +d["Year"],
+                club: d["Club"],
+                points: +d["Points"]
+            }));
+
+            // Get unique years and clubs
+            const years = [...new Set(processedData.map(d => d.year))].sort();
+            const clubs = [...new Set(processedData.map(d => d.club))].sort();
+
+            // Create nested data structure (one array per club)
+            const dataByClub = clubs.map(club => {
+                const clubData = years.map(year => {
+                    const yearData = processedData.find(d => d.club === club && d.year === year);
+                    return {
+                        year: year,
+                        points: yearData ? yearData.points : null
+                    };
+                }).filter(d => d.points !== null);
+                
+                return {
+                    club: club,
+                    values: clubData
+                };
+            }).filter(d => d.values.length > 0);
+
+            // Create scales
+            const xScale = d3.scaleLinear()
+                .domain(d3.extent(years))
+                .range([0, width]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(processedData, d => d.points)])
+                .range([height, 0]);
+
+            const colors = [
+		// Color palette from https://coolors.co/palettes/popular/gradient
+		"#88d4ab","#78c6a3","#67b99a","#56ab91","#469d89","#358f80",
+	        "#ffea00","#ffdd00","#ffd000","#ffc300","#ffb700","#ffaa00",
+		"#bbdefb","#90caf9","#64b5f6","#42a5f5","#2196f3","#1e88e5"
+	    ];
+            
+            const colorScale = d3.scaleOrdinal(colors).domain(clubs);
+
+	    const OPACITY_NORMAL = 0.4;
+	    const OPACITY_SELECTED = 1;
+	    const LINEWIDTH_NORMAL = 2;
+	    const LINEWIDTH_SELECTED = 7;
+	    const DOTWIDTH_NORMAL = 4;
+	    const DOTWIDTH_SELECTED = 7;
+	    
+            // Create line generator
+            const line = d3.line()
+                .x(d => xScale(d.year))
+                .y(d => yScale(d.points))
+                .curve(d3.curveLinear);
+
+            // Add axes
+            svg.append("g")
+                .attr("class", "x-axis")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(xScale).tickFormat(d3.format("d")));
+            svg.append("g")
+                .attr("class", "y-axis")
+                .call(d3.axisLeft(yScale));
+
+            // Add axis labels
+            svg.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (height / 2))
+                .attr("dy", "1em")
+                .text("Punkte");
+
+            svg.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", `translate(${width / 2}, ${height + margin.bottom - 10})`)
+                .text("Jahr");
+
+            // Draw lines
+            const lines = svg.selectAll(".line")
+                .data(dataByClub)
+                .enter().append("path")
+                .attr("class", "line")
+                .attr("d", d => line(d.values))
+                .attr("stroke", d => colorScale(d.club))
+                .attr("stroke-width", LINEWIDTH_NORMAL)
+                .attr("fill", "none")
+                .attr("opacity", OPACITY_NORMAL)
+                .style("cursor", "pointer");
+
+            // Draw points
+            const points = svg.selectAll(".dot-group")
+                .data(dataByClub)
+                .enter().append("g")
+                .attr("class", "dot-group");
+
+            points.selectAll(".dot")
+                .data(d => d.values.map(v => ({...v, club: d.club})))
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => xScale(d.year))
+                .attr("cy", d => yScale(d.points))
+                .attr("r", DOTWIDTH_NORMAL)
+                .attr("fill", d => colorScale(d.club))
+                .attr("stroke", "#fff")
+                .attr("stroke-width", DOTWIDTH_NORMAL)
+                .style("cursor", "pointer");
+
+            function toggleClub(club) {
+                if (selectedClubs.has(club)) {
+                    selectedClubs.delete(club);
+                } else {
+                    selectedClubs.add(club);
+                }
+                updateSelection();
+            }
+
+            function updateSelection() {
+                lines.attr("opacity", d => selectedClubs.has(d.club) ? OPACITY_SELECTED : OPACITY_NORMAL)
+                    .attr("stroke-width", d => selectedClubs.has(d.club) ? LINEWIDTH_SELECTED : LINEWIDTH_NORMAL);
+                points.selectAll(".dot")
+                    .attr("r", d => selectedClubs.has(d.club) ? DOTWIDTH_SELECTED : DOTWIDTH_NORMAL);
+                d3.selectAll(".club-button")
+                  .classed("selected", d => selectedClubs.has(d));
+                updatePermanentTooltips();
+            }
+
+            function updatePermanentTooltips() {
+                svg.selectAll(".permanent-tooltip").remove();
+                
+                selectedClubs.forEach(club => {
+                    const clubData = dataByClub.find(d => d.club === club);
+                    if (clubData && clubData.values.length > 0) {
+                        const lastPoint = clubData.values[clubData.values.length - 1];
+                        svg.append("text")
+                            .attr("class", "permanent-tooltip")
+                            .attr("x", xScale(lastPoint.year) + 10)
+                            .attr("y", yScale(lastPoint.points))
+                            .attr("dy", "0.35em")
+                            .style("font-size", "14px")
+                            .style("font-weight", "bold")
+                            .style("fill", "#333")
+                            .text(club);
+                    }
+                });
+            }
+
+            // Add line interactions
+            lines.on("mouseover", function(event, d) {
+                if (!selectedClubs.has(d.club)) {
+                    tooltip.transition().duration(200).style("opacity", 0.9);
+                    tooltip.html(d.club)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                }
+            })
+            .on("mouseout", function(event, d) {
+                if (!selectedClubs.has(d.club)) {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                }
+            })
+            .on("click", function(event, d) {
+                event.stopPropagation();
+                toggleClub(d.club);
+            });
+
+            // Add point interactions
+            points.selectAll(".dot")
+                .on("mouseover", function(event, d) {
+                    if (!selectedClubs.has(d.club)) {
+                        tooltip.transition().duration(200).style("opacity", 0.9);
+                        tooltip.html(`${d.club}<br/>${d.year}: ${d.points} Punkte`)
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    }
+                })
+                .on("mouseout", function(event, d) {
+                    if (!selectedClubs.has(d.club)) {
+                        tooltip.transition().duration(500).style("opacity", 0);
+                    }
+                })
+                .on("click", function(event, d) {
+                    event.stopPropagation();
+                    toggleClub(d.club);
+                });
+
+            // Create club buttons
+            const controlsDiv = d3.select("#controls");
+            const buttonsPerRow = 8;
+            
+            controlsDiv.append("h3").text("Ruderclubs:");
+            
+            const buttonGrid = controlsDiv.append("div")
+                .attr("class", "button-grid");
+
+            const buttons = buttonGrid.selectAll(".club-button")
+                .data(clubs)
+                .enter().append("button")
+                .attr("class", "club-button")
+                .style("background-color", d => colorScale(d))
+                .text(d => d)
+                .on("click", function(event, d) {
+                    toggleClub(d);
+                })
+                .on("mouseover", function(event, d) {
+                    if (!selectedClubs.has(d)) {
+                        d3.select(this).style("opacity", 0.8);
+                    }
+                })
+                .on("mouseout", function(event, d) {
+                    if (!selectedClubs.has(d)) {
+                        d3.select(this).style("opacity", 1);
+                    }
+                });
+
+            // Clear selections when clicking on empty space
+            svg.on("click", function() {
+                selectedClubs.clear();
+                updateSelection();
+                tooltip.transition().duration(500).style("opacity", 0);
+            });
+        });
+    </script>
+</body>
+</html>
