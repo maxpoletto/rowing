@@ -11,10 +11,18 @@
 
 <body>
     <div id="main-container">
-        <h1>History of the <em>Preis der Ehrenmitglieder</em><br/>(Best club at the Swiss National Rowing Championships)</h1>
-        <p>For rules and other information, see <a href="https://www.swissrowing.ch/de/events/schweizer-meisterschaften/preis-der-ehrenmitglieder">Swiss Rowing</a>.</p>
-        <p>Click on or hover over any of the lines, or click one or more of the club buttons.</p>
+        <header>
+            <h1>History of the <em>Preis der Ehrenmitglieder</em></h1>
+            <p class="subtitle">(Best club at the Swiss National Rowing Championships)</p>
+            <div class="info-section">
+                <p>For rules and other information, see <a href="https://www.swissrowing.ch/de/events/schweizer-meisterschaften/preis-der-ehrenmitglieder" target="_blank">Swiss Rowing</a>.</p>
+                <p class="instructions">Click on or hover over any of the lines, or click one or more of the club buttons below.</p>
+            </div>
+        </header>
         <div id="chart"></div>
+        <div id="chart-controls">
+            <button id="clear-selection" class="clear-button">Clear Selection</button>
+        </div>
         <div id="controls"></div>
     </div>
     <script>
@@ -132,11 +140,6 @@
                 .attr("x", 0 - (height / 2))
                 .attr("dy", "1em")
                 .text("Points");
-
-            svg.append("text")
-                .attr("class", "axis-label x-axis-label")
-                .attr("transform", `translate(${width / 2}, ${height + margin.bottom - 10})`)
-                .text("Year");
 
             // Draw lines
             const lines = svg.selectAll(".line")
@@ -285,8 +288,7 @@
                     }
                 });
 
-            // Clear selections when clicking on empty space
-            svg.on("click", function () {
+            d3.select("#clear-selection").on("click", function () {
                 selectedClubs.clear();
                 updateSelection();
                 tooltip.transition().duration(500).style("opacity", 0);
@@ -318,9 +320,6 @@
                 // Update axis labels
                 svg.select(".y-axis-label")
                     .attr("x", 0 - (height / 2));
-
-                svg.select(".x-axis-label")
-                    .attr("transform", `translate(${width / 2}, ${height + margin.bottom - 10})`);
 
                 // Update lines
                 lines.attr("d", d => line(d.values));

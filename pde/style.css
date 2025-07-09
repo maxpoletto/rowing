@@ -2,20 +2,80 @@ body {
     font-family: Gill-Sans, Roboto, Arial, sans-serif;
     margin: 0;
     padding: 20px;
-    background-color: #fefefe;
+}
+
+header {
+    padding: 40px 30px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5em;
+    font-weight: 300;
+    margin: 0 0 10px 0;
+}
+
+header h1 em {
+    font-style: italic;
+}
+
+.subtitle {
+    font-size: 1.3em;
+    margin: 0 0 30px 0;
+    font-weight: 300;
+}
+
+.info-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.info-section p {
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+
+.instructions {
+    font-style: italic;
 }
 
 #chart {
-    margin-bottom: 30px;
-    width: 100%;
+    margin: 40px 30px 20px 30px;
+    width: calc(100% - 60px);
 }
 
 #chart svg {
     width: 100%;
     height: auto;
+    border-radius: 8px;
+}
+
+#chart-controls {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.clear-button {
+    background: deepskyblue;
+    color: white;
+    border: 2px solid #ddd;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.clear-button:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 #controls {
+    padding: 30px;
 }
 
 .line {
@@ -90,9 +150,9 @@ body {
 }
 
 .club-button {
-    padding: 5px;
+    padding: 8px;
     border: 2px solid #ddd;
-    border-radius: 6px;
+    border-radius: 8px;
     height: 65px;
     font-size: 14px;
     font-weight: normal;
@@ -125,21 +185,14 @@ body {
     margin: 0 auto;
     max-width: 1500px;
     width: 100%;
-}
-
-h1 {
-    color: #555;
-    font-size: 36px;
-    font-weight: 400;
-    text-align: center;
-    margin-bottom: 30px;
+    overflow: visible;
 }
 
 h3 {
-    color: #333;
+    color: #555;
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 15px;
+    margin: 0 0 20px 0;
 }
 
 /* Clean grid lines */
