@@ -81,7 +81,7 @@ header h1 em {
 
 #chart-controls {
     text-align: center;
-    margin: 20px 0;
+    margin: 20px 0 0 0;
 }
 
 .clear-button {
@@ -166,7 +166,7 @@ header h1 em {
     grid-template-columns: repeat(8, 150px);
     gap: 8px;
     margin-top: 15px;
-    width: 100%;
+    justify-content: center;
 }
 
 @media (max-width: 1300px) {

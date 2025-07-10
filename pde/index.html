@@ -295,15 +295,13 @@
             }
             // Handle resize and orientation changes
             let resizeTimeout;
-            window.addEventListener('resize', function() {
+            window.addEventListener('resize', function () {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(resizeChart, 100);
             });
 
             // Create club buttons
             const controlsDiv = d3.select("#controls");
-            controlsDiv.append("h3").text("Clubs:");
-
             const buttonGrid = controlsDiv.append("div")
                 .attr("class", "button-grid");
 
@@ -331,6 +329,14 @@
                 selectedClubs.clear();
                 updateSelection();
                 tooltip.transition().duration(500).style("opacity", 0);
+            });
+
+            // Add handlers to dismiss tooltips on mobile.
+            d3.select("#chart svg").on("click", function (event) {
+                tooltip.transition().duration(300).style("opacity", 0);
+            });
+            d3.select("#chart svg").on("touchstart", function (event) {
+                tooltip.transition().duration(300).style("opacity", 0);
             });
         });
     </script>
