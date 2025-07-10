@@ -3,8 +3,11 @@
 <head>
     <title>Fastest Interval Finder</title>
     <style>
+        body {
+	    font-family: "Roboto", sans-serif;
+	}
         table {
-            width: 70%;
+            width: 80%;
             border-collapse: collapse;
         }
         th, td {
@@ -18,6 +21,13 @@
         #targetDistances, #inputFile {
             width: 25em;
         }
+	#gobutton {
+	    margin-top: 5px;
+	}
+	#resultTable {
+	    border: 1;
+	    margin-top: 10px;
+	}
     </style>
     <script src="./bundle.js"></script>
 </head>
@@ -41,16 +51,19 @@
         </p>
     </div>
     <input type="file" id="inputFile" accept=".csv,.fit,.gpx">
-    <input type="text" id="targetDistances" placeholder="Optional target distances (comma-separated)">
+    <input type="text" id="targetDistances"
+	   placeholder="Optional target distances (comma-separated)">
     <br/>
-    <button style="margin-top: 5px" onclick="findFastestIntervals()">Find Fastest Intervals</button>
-    <table id="resultTable" border="1" style="margin-top: 10px">
+    <button id="gobutton" onclick="findFastestIntervals()">
+        Find Fastest Intervals
+    </button>
+    <table id="resultTable">
         <thead>
             <tr>
                 <th>Distance (m)</th>
                 <th>Fastest Time (min:sec)</th>
                 <th>Position (m)</th>
-                <th>Average Pace per 500m (min:sec)</th>
+                <th>Avg Pace / 500m (min:sec)</th>
             </tr>
         </thead>
         <tbody>
