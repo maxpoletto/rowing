@@ -29,12 +29,16 @@
         <div id="controls"></div>
     </div>
     <script>
-        const margin = { top: 30, right: 150, bottom: 60, left: 80 };
+        // Use smaller margins on mobile
+        const isMobile = window.innerWidth <= 768;
+        const margin = isMobile ?
+            { top: 20, right: 40, bottom: 50, left: 50 } :
+            { top: 30, right: 150, bottom: 60, left: 80 };
 
-        function getChartDimensions() {
+                function getChartDimensions() {
             const containerWidth = document.getElementById('chart').offsetWidth;
-            const width = containerWidth - margin.left - margin.right;
-            const height = Math.max(400, Math.min(750, width * 0.5)) - margin.top - margin.bottom;
+            const width = Math.max(300, containerWidth - margin.left - margin.right);
+            const height = Math.max(250, Math.min(750, width * 0.5)) - margin.top - margin.bottom;
             return { width, height };
         }
 
@@ -107,7 +111,7 @@
                 // Color palette from https://coolors.co/palettes/popular/gradient
                 "#88d4ab", "#78c6a3", "#67b99a", "#56ab91", "#469d89", "#358f80",
                 "#ffea00", "#ffdd00", "#ffd000", "#ffc300", "#ffb700", "#ffaa00",
-                "#bbdefb", "#90caf9", "#64b5f6", "#42a5f5", "#2196f3", "#1e88e5"
+                "#90caf9", "#64b5f6", "#42a5f5", "#2196f3", "#1e88e5", "#1976d2"
             ];
 
             const colorScale = d3.scaleOrdinal(colors).domain(clubs);
@@ -290,7 +294,12 @@
                 // Update permanent tooltips
                 updatePermanentTooltips();
             }
-            window.addEventListener('resize', resizeChart);
+            // Handle resize and orientation changes
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeChart, 100);
+            });
 
             // Create club buttons
             const controlsDiv = d3.select("#controls");

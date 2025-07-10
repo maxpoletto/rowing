@@ -42,12 +42,41 @@ header h1 em {
 #chart {
     margin: 40px 30px 20px 30px;
     width: calc(100% - 60px);
+    overflow-x: auto;
 }
 
 #chart svg {
     width: 100%;
     height: auto;
     border-radius: 8px;
+    min-width: 400px;
+}
+
+@media (max-width: 768px) {
+    #chart {
+        margin: 20px 10px 15px 10px;
+        width: calc(100% - 20px);
+    }
+
+    #chart svg {
+        min-width: 500px;
+    }
+
+    header {
+        padding: 30px 20px;
+    }
+
+    header h1 {
+        font-size: 2em;
+    }
+
+    .subtitle {
+        font-size: 1.1em;
+    }
+
+    .info-section p {
+        font-size: 1em;
+    }
 }
 
 #chart-controls {
@@ -146,6 +175,15 @@ header h1 em {
 @media (max-width: 600px) {
     .button-grid {
         grid-template-columns: repeat(4, 1fr);
+    }
+
+    .club-button {
+        height: 50px;
+        font-size: 12px;
+    }
+
+    #controls {
+        padding: 20px 15px;
     }
 }
 
