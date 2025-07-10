@@ -29,13 +29,12 @@
         <div id="controls"></div>
     </div>
     <script>
-        // Use smaller margins on mobile
-        const isMobile = window.innerWidth <= 768;
-        const margin = isMobile ?
-            { top: 20, right: 40, bottom: 50, left: 50 } :
-            { top: 30, right: 150, bottom: 60, left: 80 };
+        const margin = { top: 20, right: 150, bottom: 30, left: 50 };
+        if (window.innerWidth <= 768) {
+            margin.right = 75;
+        }
 
-                function getChartDimensions() {
+        function getChartDimensions() {
             const containerWidth = document.getElementById('chart').offsetWidth;
             const width = Math.max(300, containerWidth - margin.left - margin.right);
             const height = Math.max(250, Math.min(750, width * 0.5)) - margin.top - margin.bottom;
@@ -303,8 +302,6 @@
 
             // Create club buttons
             const controlsDiv = d3.select("#controls");
-            const buttonsPerRow = 8;
-
             controlsDiv.append("h3").text("Clubs:");
 
             const buttonGrid = controlsDiv.append("div")

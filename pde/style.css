@@ -5,7 +5,7 @@ body {
 }
 
 header {
-    padding: 40px 30px;
+    padding: 20px;
     text-align: center;
 }
 
@@ -42,7 +42,7 @@ header h1 em {
 #chart {
     margin: 40px 30px 20px 30px;
     width: calc(100% - 60px);
-    overflow-x: auto;
+    overflow-x: visible;
 }
 
 #chart svg {
@@ -85,9 +85,9 @@ header h1 em {
 }
 
 .clear-button {
-    background: deepskyblue;
-    color: white;
-    border: 2px solid #ddd;
+    background: #87bba2;
+    color: #333;
+    border: 2px solid #333;
     padding: 12px 24px;
     border-radius: 4px;
     font-size: 16px;
@@ -99,12 +99,15 @@ header h1 em {
 
 .clear-button:hover {
     opacity: 0.8;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.clear-button:active {
+    transform: translateY(1px);
 }
 
 #controls {
-    padding: 30px;
+    padding: 20px;
 }
 
 .line {
@@ -160,30 +163,27 @@ header h1 em {
 
 .button-grid {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(8, 150px);
     gap: 8px;
     margin-top: 15px;
     width: 100%;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1300px) {
     .button-grid {
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(6, 150px);
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1000px) {
     .button-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, 150px);
     }
+}
 
-    .club-button {
-        height: 50px;
-        font-size: 12px;
-    }
-
-    #controls {
-        padding: 20px 15px;
+@media (max-width: 650px) {
+    .button-grid {
+        grid-template-columns: repeat(2, 150px);
     }
 }
 
@@ -191,7 +191,8 @@ header h1 em {
     padding: 8px;
     border: 2px solid #ddd;
     border-radius: 8px;
-    height: 65px;
+    height: 70px;
+    width: 140px;
     font-size: 14px;
     font-weight: normal;
     color: #333;
@@ -202,8 +203,7 @@ header h1 em {
 
 .club-button:hover {
     opacity: 0.8;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .club-button.selected {
@@ -211,8 +211,7 @@ header h1 em {
     border-width: 3px;
     color: #000;
     font-weight: bold;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .club-button.selected:hover {
