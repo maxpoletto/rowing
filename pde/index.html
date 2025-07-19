@@ -81,6 +81,31 @@
                 }
             });
 
+            // Calculate ranks by year
+            const ranksByYear = new Map();
+            years.forEach(year => {
+                // Get all clubs that competed in this year, sorted by points (descending)
+                const yearData = processedData
+                    .filter(d => d.year === year)
+                    .sort((a, b) => b.points - a.points)
+
+                // Assign ranks, handling ties
+                const yearRanks = new Map();
+                let currentRank = 1;
+                for (let i = 0; i < yearData.length; i++) {
+                    const club = yearData[i];
+
+                    // If this isn't the first entry and points are different from previous, update rank
+                    if (i > 0 && yearData[i].points !== yearData[i-1].points) {
+                        currentRank = i + 1;
+                    }
+
+                    yearRanks.set(club.club, currentRank);
+                }
+
+                ranksByYear.set(year, yearRanks);
+            });
+
             // Assemble annual point data by club
             const dataByClub = clubs.map(club => {
                 const clubData = years.map(year => {
@@ -243,8 +268,9 @@
             // Add point interactions
             points.selectAll(".dot")
                 .on("mouseover", function (event, d) {
+                    const rank = ranksByYear.get(d.year).get(d.club);
                     tooltip.transition().duration(200).style("opacity", 0.9);
-                    tooltip.html(`${d.club}<br/>${d.year}: ${d.points} Points`)
+                    tooltip.html(`${d.club}<br/>${d.year}: ${d.points} Points (Rank ${rank})`)
                         .style("left", (event.pageX + 10) + "px")
                         .style("top", (event.pageY - 28) + "px");
                 })
