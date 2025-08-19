@@ -157,15 +157,20 @@ function initializeDistanceSlider() {
     const minSpan = document.getElementById('distance-min');
     const maxSpan = document.getElementById('distance-max');
     
+    // Create logarithmic range: good resolution up to 20km, then coarser to 100km
     noUiSlider.create(slider, {
-        start: appData.distanceRange,
+        start: [0, 100],
         connect: true,
         range: {
-            'min': appData.distanceRange[0],
-            'max': appData.distanceRange[1]
+            'min': 0,
+            '20%': 5,
+            '40%': 10,
+            '60%': 20,
+            '80%': 50,
+            'max': 100
         },
         step: 1,
-        tooltips: [true, true],
+        tooltips: false, // Remove handle tooltips
         format: {
             to: value => Math.round(value),
             from: value => Number(value)
