@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EFA Rowing Logbook Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>EFA Rowing Logbook Viewer</h1>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-button active" data-tab="logbook">Logbook</button>
+            <button class="tab-button" data-tab="statistics">Statistics</button>
+        </nav>
+
+        <main>
+            <!-- Logbook Tab -->
+            <div id="logbook-tab" class="tab-content active">
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="year-select">Years:</label>
+                        <select id="year-select" multiple size="5">
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="search-input">Search (boat/crew):</label>
+                        <input type="text" id="search-input" placeholder="Search boats and crew names...">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="distance-slider">Distance (km):</label>
+                        <div id="distance-slider"></div>
+                        <div class="slider-values">
+                            <span id="distance-min">0</span> - <span id="distance-max">50</span> km
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="logbook-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="date">Date <span class="sort-indicator"></span></th>
+                                <th data-sort="boat">Boat <span class="sort-indicator"></span></th>
+                                <th data-sort="crew">Crew <span class="sort-indicator"></span></th>
+                                <th data-sort="dist">Distance <span class="sort-indicator"></span></th>
+                                <th data-sort="dest">Destination <span class="sort-indicator"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <button id="first-page" class="page-btn">&lt;&lt;</button>
+                    <button id="prev-page" class="page-btn">&lt;</button>
+                    <span id="page-numbers"></span>
+                    <button id="next-page" class="page-btn">&gt;</button>
+                    <button id="last-page" class="page-btn">&gt;&gt;</button>
+                    <span class="page-info">
+                        Showing <span id="showing-start">0</span>-<span id="showing-end">0</span> of <span id="total-entries">0</span> entries
+                    </span>
+                </div>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div id="statistics-tab" class="tab-content">
+                <nav class="stats-tabs">
+                    <button class="stats-tab-button active" data-stats-tab="km-by-boat">Total km by Boat</button>
+                    <button class="stats-tab-button" data-stats-tab="km-by-rower">Total km by Rower</button>
+                    <button class="stats-tab-button" data-stats-tab="km-over-time">km Over Time</button>
+                </nav>
+
+                <!-- Total km by Boat -->
+                <div id="km-by-boat-tab" class="stats-tab-content active">
+                    <div class="controls">
+                        <div class="control-group">
+                            <label for="boat-stats-year-select">Years:</label>
+                            <select id="boat-stats-year-select" multiple size="5">
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="boat-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Total km by Rower -->
+                <div id="km-by-rower-tab" class="stats-tab-content">
+                    <div class="controls">
+                        <div class="control-group">
+                            <label for="rower-stats-year-select">Years:</label>
+                            <select id="rower-stats-year-select" multiple size="5">
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="rower-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- km Over Time -->
+                <div id="km-over-time-tab" class="stats-tab-content">
+                    <div class="controls">
+                        <div class="control-group">
+                            <label for="time-stats-year-select">Years:</label>
+                            <select id="time-stats-year-select" multiple size="5">
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="time-stats-type">View by:</label>
+                            <select id="time-stats-type">
+                                <option value="boat">Boat</option>
+                                <option value="rower">Rower</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="time-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load external libraries first -->
+    <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <!-- Load our application script after libraries are loaded -->
+    <script src="app.js"></script>
+</body>
+</html>
