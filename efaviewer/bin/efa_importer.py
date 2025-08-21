@@ -3,21 +3,27 @@
 EFA Backup Importer
 
 Converts EFA rowing club backup files (XML format) to normalized JSON files
-for web viewing. Supports boat variants, former members, and glob patterns.
+for web viewing.
 """
 
 import argparse
-import json
-import xml.etree.ElementTree as ET
-from pathlib import Path
 import glob
+import gzip
+import json
+import logging
 import re
+import xml.etree.ElementTree as ET
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
+logger = logging.getLogger(__name__)
 
 class EFAImporter:
     def __init__(self):
+        self.stats = {
+            "excessive_distances": 0,
+        }
         self.boats = {}
         self.persons = {}
         self.destinations = {}
@@ -36,13 +42,13 @@ class EFAImporter:
     def parse_distance(self, distance_str: str) -> Optional[int]:
         """Parse distance string and return rounded km as integer"""
         if not distance_str:
-            return None
+            return 0
 
         # Extract number from strings like "8 km", "10.5 km"
         match = re.search(r'(\d+(?:\.\d+)?)', distance_str)
         if match:
             return round(float(match.group(1)))
-        return None
+        return 0
 
     def parse_seats(self, seats_str: str) -> int:
         """Parse seats string like '4X', '8', '2' and return integer"""
@@ -75,17 +81,23 @@ class EFAImporter:
             boat_id = record.find("Id").text
             name = record.find("Name").text
             name_affix = record.find("NameAffix")
-            last_variant = int(record.find("LastVariant").text)
 
-            # Handle boat variants
+            # Handle boat variants and possible errors
+            last_variant = int(record.find("LastVariant").text)
             type_seats = record.find("TypeSeats").text.split(";")
             type_rigging = record.find("TypeRigging").text.split(";")
             type_coxing = record.find("TypeCoxing").text.split(";")
 
-            # Fix bug: LastVariant=3 with only 2 variants
-            actual_variants = min(last_variant, len(type_seats))
+            if len(type_seats) != len(type_rigging) or len(type_seats) != len(type_coxing):
+                logger.warning(f"Boat {name} ({boat_id}) has inconsistent variant counts: skipping")
+                logger.debug(f"Full XML record: {ET.tostring(record, encoding='utf-8').decode('utf-8')}")
+                continue
 
-            for variant in range(1, actual_variants + 1):
+            n_variants = len(type_seats)
+            if n_variants != last_variant:
+                logger.warning(f"Boat {name} ({boat_id}) has {n_variants} variants but LastVariant={last_variant}: using {n_variants}")
+
+            for variant in range(1, n_variants + 1):
                 variant_id = f"{boat_id}-v{variant}"
 
                 boat_data = {
@@ -114,22 +126,24 @@ class EFAImporter:
             last_name_elem = record.find("LastName")
             gender = record.find("Gender").text
 
-            # Handle missing LastName (some records only have FirstName)
+            # Not all records have FirstName and LastName
             last_name = last_name_elem.text if last_name_elem is not None else None
+            first_name = first_name_elem.text if first_name_elem is not None else None
 
-            # Skip archived persons (they're just placeholders for deleted members)
+            # Skip archived persons (placeholders for deleted members)
             if last_name and last_name.startswith("archiveID:"):
                 continue
 
             person_data = {
                 "id": person_id,
                 "sex": gender.lower(),
-                "fmr": False  # All persons from XML are current members
+                # We record these but unclear what these mean in EFA, since persons
+                # with these flags still appear in logbooks.
+                "del": record.find("Deleted") is not None,
+                "hid": record.find("Invisible") is not None,
             }
-
-            if first_name_elem is not None:
-                person_data["fn"] = first_name_elem.text
-
+            if first_name:
+                person_data["fn"] = first_name
             if last_name:
                 person_data["ln"] = last_name
 
@@ -147,8 +161,9 @@ class EFAImporter:
             dest_data = {
                 "id": dest_id,
                 "name": name,
-                "fmr": False
             }
+            if record.find("Distance") is not None:
+                dest_data["dist"] = self.parse_distance(record.find("Distance").text)
 
             self.destinations[dest_id] = dest_data
 
@@ -240,8 +255,8 @@ class EFAImporter:
 
                 # Filter out future years
                 if entry["year"] and entry["year"] > current_year:
-                    print(f"Warning: Skipping entry with future year {entry['year']} (date: {entry['date']})")
-                    self.print_record_debug(record)
+                    logger.warning(f"Skipping entry with future year {entry['year']} (date: {entry['date']})")
+                    logger.debug(f"Full XML record: {ET.tostring(record, encoding='utf-8').decode('utf-8')}")
                     continue
 
                 start_time = record.find("StartTime")
@@ -317,9 +332,10 @@ class EFAImporter:
                 distance_elem = record.find("Distance")
                 if distance_elem is not None:
                     distance = self.parse_distance(distance_elem.text)
-                    if distance and distance > 100:
-                        print(f"Warning: Skipping entry with distance {distance}km (over 100km limit)")
-                        self.print_record_debug(record)
+                    if distance > 100:
+                        self.stats["excessive_distances"] += 1
+                        logger.warning(f"Found entry with distance {distance}km, skipping")
+                        logger.debug(f"Full XML record: {ET.tostring(record, encoding='utf-8').decode('utf-8')}")
                         continue
                     entry["dist"] = distance
 
@@ -344,11 +360,16 @@ class EFAImporter:
         }
 
         for filename, data in exports.items():
-            with open(output_path / filename, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-
-        print(f"Exported {len(self.boats)} boats, {len(self.persons)} persons, "
-              f"{len(self.destinations)} destinations, {len(self.logbooks)} logbook entries")
+            gz_filename = filename + ".gz"
+            with gzip.open(output_path / gz_filename, 'wt', encoding='utf-8') as f:
+                f.write(json.dumps(data, separators=(',', ':')))
+        logger.info(f"Export completed")
+        logger.info(f"Stats: {self.stats}")
+        logger.info(f"  Exported boats: {len(self.boats)}")
+        logger.info(f"  Exported persons: {len(self.persons)}")
+        logger.info(f"  Exported destinations: {len(self.destinations)}")
+        logger.info(f"  Exported logbook entries: {len(self.logbooks)}")
+        logger.info(f"  Skipped logbook entries due to excessive distance: {self.stats['excessive_distances']}")
 
     def check_consistency(self) -> List[str]:
         """Check consistency of the imported data and return list of errors"""
@@ -356,12 +377,14 @@ class EFAImporter:
 
         # Check that all IDs in logbooks can be found in respective entity dicts
         for i, entry in enumerate(self.logbooks):
-            # Check boat ID
-            if "boat" in entry and entry["boat"] not in self.boats:
+            if "boat" not in entry:
+                errors.append(f"Logbook entry {i}: no boat ID")
+            elif entry["boat"] not in self.boats:
                 errors.append(f"Logbook entry {i}: boat ID '{entry['boat']}' not found in boats")
 
-            # Check crew IDs
-            if "crew" in entry:
+            if "crew" not in entry:
+                errors.append(f"Logbook entry {i}: no crew IDs")
+            else:
                 for j, person_id in enumerate(entry["crew"]):
                     if person_id not in self.persons:
                         errors.append(f"Logbook entry {i}: crew[{j}] ID '{person_id}' not found in persons")
@@ -369,18 +392,6 @@ class EFAImporter:
             # Check destination ID
             if "dest" in entry and entry["dest"] not in self.destinations:
                 errors.append(f"Logbook entry {i}: destination ID '{entry['dest']}' not found in destinations")
-
-        # Check boat ID uniqueness
-        boat_ids = list(self.boats.keys())
-        if len(boat_ids) != len(set(boat_ids)):
-            duplicates = [bid for bid in boat_ids if boat_ids.count(bid) > 1]
-            errors.append(f"Duplicate boat IDs found: {list(set(duplicates))}")
-
-        # Check person ID uniqueness
-        person_ids = list(self.persons.keys())
-        if len(person_ids) != len(set(person_ids)):
-            duplicates = [pid for pid in person_ids if person_ids.count(pid) > 1]
-            errors.append(f"Duplicate person IDs found: {list(set(duplicates))}")
 
         # Check that boats with same name have consistent ID patterns (same oid)
         boats_by_name = {}
@@ -406,19 +417,6 @@ class EFAImporter:
 
         return errors
 
-    def print_record_debug(self, record):
-        """Print full XML record for debugging problematic entries"""
-        print("--- Full XML Record Debug ---")
-        print(f"Record tag: {record.tag}")
-        print("All child elements:")
-        for child in record:
-            value = child.text if child.text is not None else "(None)"
-            print(f"  {child.tag}: {value}")
-        if record.attrib:
-            print(f"Attributes: {record.attrib}")
-        print("--- End Debug ---")
-
-
 def main():
     parser = argparse.ArgumentParser(description="Convert EFA backup files to JSON")
     parser.add_argument("--boats", required=True, help="Boats file (boats.efa2boats)")
@@ -426,8 +424,17 @@ def main():
     parser.add_argument("--destinations", required=True, help="Destinations file (destinations.efa2destinations)")
     parser.add_argument("--logbooks", required=True, nargs="+", help="Logbook files (supports globs like *.efa2logbook)")
     parser.add_argument("--output", "-o", default="output", help="Output directory (default: output)")
+    parser.add_argument("--verbose", "-v", action="count", default=0, help="Increase verbosity")
 
     args = parser.parse_args()
+
+    # Set up logging
+    log_level = logging.INFO
+    if args.verbose == 1:
+        log_level = logging.DEBUG
+    elif args.verbose > 1:
+        log_level = logging.TRACE
+    logging.basicConfig(level=log_level)
 
     # Expand globs for logbooks
     logbook_files = []
@@ -440,38 +447,36 @@ def main():
             if Path(pattern).exists():
                 logbook_files.append(pattern)
             else:
-                print(f"Warning: No files found matching pattern: {pattern}")
+                logger.warning(f"No files found matching pattern: {pattern}")
 
     if not logbook_files:
-        print("Error: No logbook files found")
+        logger.error("No logbook files found")
         return 1
 
     importer = EFAImporter()
 
-    print("Processing boats...")
+    logger.info("Processing boats...")
     importer.process_boats(args.boats)
 
-    print("Processing persons...")
+    logger.info("Processing persons...")
     importer.process_persons(args.persons)
 
-    print("Processing destinations...")
+    logger.info("Processing destinations...")
     importer.process_destinations(args.destinations)
 
-    print(f"Processing {len(logbook_files)} logbook files...")
+    logger.info(f"Processing {len(logbook_files)} logbook files...")
     importer.process_logbooks(logbook_files)
 
-    print(f"Exporting to {args.output}/...")
+    logger.info(f"Exporting to {args.output}/...")
     importer.export_json(args.output)
 
-    print("Checking consistency...")
+    logger.info("Checking consistency...")
     errors = importer.check_consistency()
     if errors:
-        print(f"Found {len(errors)} consistency errors:")
+        logger.error(f"Found {len(errors)} consistency errors:")
         for error in errors:
-            print(f"  - {error}")
+            logger.error(f"  - {error}")
         return 1
-    else:
-        print("No consistency errors found!")
 
     return 0
 
