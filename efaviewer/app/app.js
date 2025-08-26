@@ -30,10 +30,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadData() {
     try {
         const [logbooksResponse, boatsResponse, personsResponse, destinationsResponse] = await Promise.all([
-            fetch('sample_output/logbooks.json'),
-            fetch('sample_output/boats.json'),
-            fetch('sample_output/persons.json'),
-            fetch('sample_output/destinations.json')
+            fetch('data/logbooks.json'),
+            fetch('data/boats.json'),
+            fetch('data/persons.json'),
+            fetch('data/destinations.json')
         ]);
 
         appData.logbooks = await logbooksResponse.json();
