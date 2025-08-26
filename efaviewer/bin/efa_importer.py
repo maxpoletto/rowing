@@ -23,6 +23,8 @@ class EFAImporter:
     def __init__(self):
         self.stats = {
             "excessive_distances": 0,
+            "future_years": 0,
+            "missing_boats": 0,
         }
         self.boats = {}
         self.persons = {}
@@ -248,7 +250,6 @@ class EFAImporter:
             for record in root.findall(".//record"):
                 entry = {}
 
-                # Basic fields
                 date_info = self.parse_date(record.find("Date").text)
                 entry["year"] = date_info["year"]
                 entry["date"] = date_info["date"]
@@ -257,15 +258,16 @@ class EFAImporter:
                 if entry["year"] and entry["year"] > current_year:
                     logger.warning(f"Skipping entry with future year {entry['year']} (date: {entry['date']})")
                     logger.debug(f"Full XML record: {ET.tostring(record, encoding='utf-8').decode('utf-8')}")
+                    self.stats["future_years"] += 1
                     continue
 
                 start_time = record.find("StartTime")
                 if start_time is not None:
-                    entry["t0"] = start_time.text
+                    entry["t0"] = start_time.text[:-3] # Remove ':00' seconds
 
                 end_time = record.find("EndTime")
                 if end_time is not None:
-                    entry["t1"] = end_time.text
+                    entry["t1"] = end_time.text[:-3] # Remove ':00' seconds
 
                 # Boat - can be referenced by ID or name
                 boat_id_elem = record.find("BoatId")
@@ -279,23 +281,17 @@ class EFAImporter:
                     if full_boat_id in self.boats:
                         entry["boat"] = full_boat_id
                     else:
-                        # Try to find any variant of this boat
-                        found_variant = None
-                        for boat_id in self.boats:
-                            if boat_id.startswith(f"{boat_id_elem.text}-v"):
-                                found_variant = boat_id
-                                break
-                        if found_variant:
-                            entry["boat"] = found_variant
-                        else:
-                            # Boat doesn't exist - create former entity
-                            entry["boat"] = self.resolve_or_create_entity(boat_name_elem.text if boat_name_elem else boat_id_elem.text, "boat")
+                        logger.warning(f"Boat {full_boat_id} not found in boats.efa2boats")
+                        logger.debug(f"Full XML record: {ET.tostring(record, encoding='utf-8').decode('utf-8')}")
+                        self.stats["missing_boats"] += 1
+                        if boat_name_elem is not None:
+                            entry["boat"] = self.resolve_or_create_entity(boat_name_elem.text, "boat")
                 elif boat_name_elem is not None and boat_name_elem.text:
                     entry["boat"] = self.resolve_or_create_entity(boat_name_elem.text, "boat")
 
                 # Crew - can be referenced by ID or name
                 crew = []
-                for i in range(1, 20):  # Max 20 crew members
+                for i in range(1, 20):
                     crew_id_elem = record.find(f"Crew{i}Id")
                     crew_name_elem = record.find(f"Crew{i}Name")
 
@@ -344,6 +340,11 @@ class EFAImporter:
                 if session_type is not None:
                     entry["type"] = session_type.text.lower()
 
+                # Comments
+                comments = record.find("Comments")
+                if comments is not None:
+                    entry["note"] = comments.text
+
                 self.logbooks.append(entry)
 
     def export_json(self, output_dir: str):
@@ -370,6 +371,9 @@ class EFAImporter:
         logger.info(f"  Exported destinations: {len(self.destinations)}")
         logger.info(f"  Exported logbook entries: {len(self.logbooks)}")
         logger.info(f"  Skipped logbook entries due to excessive distance: {self.stats['excessive_distances']}")
+        logger.info(f"  Skipped logbook entries due to future year: {self.stats['future_years']}")
+        errs = self.stats['excessive_distances'] + self.stats['future_years']
+        logger.info(f"Percentage errors: {errs / (errs + len(self.logbooks)) * 100:.2f}%")
 
     def check_consistency(self) -> List[str]:
         """Check consistency of the imported data and return list of errors"""
@@ -400,13 +404,13 @@ class EFAImporter:
             if name not in boats_by_name:
                 boats_by_name[name] = []
             boats_by_name[name].append((boat_id, boat["oid"]))
-
         for name, boat_list in boats_by_name.items():
-            if len(boat_list) > 1:
-                # Check that all boats with same name have same oid
-                oids = [oid for _, oid in boat_list]
-                if len(set(oids)) > 1:
-                    errors.append(f"Boats with name '{name}' have different original IDs: {oids}")
+            if len(boat_list) == 1:
+                continue
+            if len(set(boat["oid"] for boat in boat_list)) > 1:
+                errors.append(f"Boats with name '{name}' have different original IDs: {oids}")
+            if len(set(boat["id"][:-2] for boat in boat_list)) > 1:
+                errors.append(f"Boats with name '{name}' have different IDs: {ids}")
 
         # Check that every person has at least first or last name
         for person_id, person in self.persons.items():
