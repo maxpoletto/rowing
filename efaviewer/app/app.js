@@ -85,6 +85,7 @@ async function loadData() {
         }, {});
 
         appData.logbooks = logbooks.map(entry => [
+            entry.year,
             formatDate(entry.date),
             formatBoat(entry.boat),
             formatCrew(entry.crew),
@@ -93,7 +94,7 @@ async function loadData() {
         ]);
 
         // Extract unique years and sort them
-        appData.years = [...new Set(appData.logbooks.map(entry => entry.year))].sort((a, b) => b - a);
+        appData.years = [...new Set(logbooks.map(entry => entry.year))].sort((a, b) => b - a);
 
         // Calculate distance range
         const distances = appData.logbooks.map(entry => entry.dist || 0).filter(d => d > 0);
@@ -234,8 +235,20 @@ function setupEventListeners() {
     document.getElementById('time-stats-type').addEventListener('change', updateStatistics);
 }
 
+const YEAR_COLUMN = 0;
+const DATE_COLUMN = 1;
+const BOAT_COLUMN = 2;
+const CREW_COLUMN = 3;
+const DIST_COLUMN = 4;
+const DEST_COLUMN = 5;
+
 function initializeTable() {
     const columns = [
+        {
+            key: 'year',
+            hidden: true,
+            type: 'string',
+        },
         {
             key: 'date',
             label: 'Date',
@@ -270,48 +283,51 @@ function initializeTable() {
         container: '.logbook-table',
         data: appData.logbooks,
         columns: columns,
-        rowsPerPage: 25,
+        rowsPerPage: 50,
         showPagination: true,
         allowSorting: true,
         emptyMessage: 'No logbook entries found'
     });
 }
 
+let filterTimer = null;
+const FILTER_TIMEOUT_MS = 50;
+
 function applyFilters() {
-    const selectedYears = Array.from(document.getElementById('year-select').selectedOptions)
-        .map(option => parseInt(option.value));
-    const terms = document.getElementById('search-input').value.toLowerCase().trim().split(' ');
-    const slider = document.getElementById('distance-slider');
-    const distanceRange = slider.noUiSlider.get().map(Number);
+    if (filterTimer) {
+        clearTimeout(filterTimer);
+    }
+    filterTimer = setTimeout(() => {
+        const selectedYears = Array.from(document.getElementById('year-select').selectedOptions)
+            .map(option => parseInt(option.value));
+        const terms = document.getElementById('search-input').value.toLowerCase().trim().split(' ');
+        const slider = document.getElementById('distance-slider');
+        const distanceRange = slider.noUiSlider.get().map(Number);
 
-    appData.filteredLogbooks = appData.logbooks.filter(entry => {
-        // Year filter
-        if (selectedYears.length > 0 && !selectedYears.includes(entry.year)) {
-            return false;
-        }
-
-        // Distance filter
-        const dist = entry.dist || 0;
-        if (dist < distanceRange[0] || dist > distanceRange[1]) {
-            return false;
-        }
-
-        // Search filter
-        if (terms.length > 0) {
-            const boat = appData.boats[entry.boat];
-            const boatName = boat ? boat.name.toLowerCase() : '';
-            const crewNames = entry.crew.map(personId => {
-                const person = appData.persons[personId];
-                if (!person) return '';
-                return `${person.fn || ''} ${person.ln || ''}`.toLowerCase();
-            }).join(' ');
-
-            if (!terms.every(term => boatName.includes(term) || crewNames.includes(term))) {
+        appData.logbookTable.filter(entry => {
+            // Year filter
+            if (selectedYears.length > 0 && !selectedYears.includes(entry[YEAR_COLUMN])) {
                 return false;
             }
-        }
-        return true;
-    });
+
+            // Distance filter
+            const dist = entry[DIST_COLUMN] || 0;
+            if (dist < distanceRange[0] || dist > distanceRange[1]) {
+                return false;
+            }
+
+            // Search filter
+            if (terms.length > 0) {
+                const boat = entry[BOAT_COLUMN];
+                const boatName = boat ? boat.toLowerCase() : '';
+                const crewNames = entry[CREW_COLUMN].toLowerCase();
+                if (!terms.every(term => boatName.includes(term) || crewNames.includes(term))) {
+                    return false;
+                }
+            }
+            return true;
+        })
+    }, FILTER_TIMEOUT_MS);
 }
 
 // Formatting functions
