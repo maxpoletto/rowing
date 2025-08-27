@@ -4,13 +4,9 @@ let appData = {
     boats: {},
     persons: {},
     destinations: {},
-    filteredLogbooks: [],
-    currentPage: 1,
-    itemsPerPage: 25,
-    sortColumn: 'date',
-    sortDirection: 'desc',
     years: [],
-    distanceRange: [0, 50]
+    distanceRange: [0, 50],
+    logbookTable: null
 };
 
 // Initialize the application
@@ -26,6 +22,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+function formatDate(date) {
+    // Parse european-style dates, DD.MM.YYYY
+    let d;
+    if (typeof date === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+        const [day, month, year] = date.split('.').map(Number);
+        d = new Date(year, month - 1, day);
+    } else {
+        d = new Date(date);
+    }
+    return d;
+}
+
+function formatBoat(boatId) {
+    const boat = appData.boats[boatId];
+    if (!boat) return 'Unknown';
+    return boat.suffix ? `${boat.name} (${boat.suffix})` : boat.name;
+}
+
+function formatCrew(crewIds) {
+    return crewIds.map(personId => {
+        const person = appData.persons[personId];
+        if (!person) return 'Unknown';
+        return `${person.fn || ''} ${person.ln || ''}`.trim();
+    }).join(', ');
+}
+
+function formatDestination(destId) {
+    const dest = appData.destinations[destId];
+    return dest ? dest.name : 'Unknown';
+}
+
 // Load JSON data files
 async function loadData() {
     try {
@@ -36,7 +63,7 @@ async function loadData() {
             fetch('data/destinations.json')
         ]);
 
-        appData.logbooks = await logbooksResponse.json();
+        const logbooks = await logbooksResponse.json();
         const boats = await boatsResponse.json();
         const persons = await personsResponse.json();
         const destinations = await destinationsResponse.json();
@@ -56,6 +83,14 @@ async function loadData() {
             acc[dest.id] = dest;
             return acc;
         }, {});
+
+        appData.logbooks = logbooks.map(entry => [
+            formatDate(entry.date),
+            formatBoat(entry.boat),
+            formatCrew(entry.crew),
+            entry.dist || 0,
+            formatDestination(entry.dest)
+        ]);
 
         // Extract unique years and sort them
         appData.years = [...new Set(appData.logbooks.map(entry => entry.year))].sort((a, b) => b - a);
@@ -197,57 +232,45 @@ function setupEventListeners() {
     document.getElementById('rower-stats-year-select').addEventListener('change', updateStatistics);
     document.getElementById('time-stats-year-select').addEventListener('change', updateStatistics);
     document.getElementById('time-stats-type').addEventListener('change', updateStatistics);
-
 }
-
-// Table functionality
-let logbookTable = null;
 
 function initializeTable() {
-    initializeSortableTable();
-}
-
-function initializeSortableTable() {
     const columns = [
         {
             key: 'date',
             label: 'Date',
             type: 'date',
             width: '100px',
-            formatter: (value) => value
+            formatter: (value) => value.toLocaleDateString()
         },
         {
             key: 'boat',
             label: 'Boat',
             type: 'string',
-            formatter: (value, row) => formatBoat(value)
         },
         {
             key: 'crew',
             label: 'Crew',
             type: 'string',
-            formatter: (value, row) => formatCrew(value)
         },
         {
             key: 'dist',
             label: 'Distance',
             type: 'number',
             width: '80px',
-            formatter: (value) => value ? `${value} km` : '0 km'
         },
         {
             key: 'dest',
             label: 'Destination',
             type: 'string',
-            formatter: (value, row) => formatDestination(value)
         }
     ];
 
-    logbookTable = new SortableTable({
+    appData.logbookTable = new SortableTable({
         container: '.logbook-table',
-        data: [],
+        data: appData.logbooks,
         columns: columns,
-        rowsPerPage: appData.itemsPerPage || 25,
+        rowsPerPage: 25,
         showPagination: true,
         allowSorting: true,
         emptyMessage: 'No logbook entries found'
@@ -286,29 +309,9 @@ function applyFilters() {
             if (!terms.every(term => boatName.includes(term) || crewNames.includes(term))) {
                 return false;
             }
-            console.log("terms", terms)
-            console.log("boat", boatName)
-            console.log("crew", crewNames)
-            }
+        }
         return true;
     });
-
-    updateTable();
-}
-
-function updateTable() {
-    if (!logbookTable) return;
-
-    // Convert filtered logbooks to table data format (array of arrays)
-    const tableData = appData.filteredLogbooks.map(entry => [
-        entry.date,
-        entry.boat,
-        entry.crew,
-        entry.dist || 0,
-        entry.dest
-    ]);
-
-    logbookTable.setData(tableData);
 }
 
 // Formatting functions
