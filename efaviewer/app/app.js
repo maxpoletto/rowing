@@ -286,12 +286,13 @@ function initializeTable() {
         rowsPerPage: 50,
         showPagination: true,
         allowSorting: true,
+        sort: { column: 'date', ascending: false },
         emptyMessage: 'No logbook entries found'
     });
 }
 
 let filterTimer = null;
-const FILTER_TIMEOUT_MS = 50;
+const FILTER_TIMEOUT_MS = 100;
 
 function applyFilters() {
     if (filterTimer) {
