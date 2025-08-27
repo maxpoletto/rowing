@@ -325,7 +325,8 @@ function applyFilters() {
                 const boat = entry[BOAT_COLUMN];
                 const boatName = boat ? boat.toLowerCase() : '';
                 const crewNames = entry[CREW_COLUMN].toLowerCase();
-                if (!terms.every(term => boatName.includes(term) || crewNames.includes(term))) {
+                const dest = entry[DEST_COLUMN].toLowerCase();
+                if (!terms.every(term => boatName.includes(term) || crewNames.includes(term) || dest.includes(term))) {
                     return false;
                 }
             }
