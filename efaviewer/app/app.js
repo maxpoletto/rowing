@@ -94,7 +94,6 @@ function initializeTabs() {
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
 
-            // Update content states
             tabContents.forEach(content => content.classList.remove('active'));
             document.getElementById(`${targetTab}-tab`).classList.add('active');
 
@@ -258,7 +257,7 @@ function initializeSortableTable() {
 function applyFilters() {
     const selectedYears = Array.from(document.getElementById('year-select').selectedOptions)
         .map(option => parseInt(option.value));
-    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    const terms = document.getElementById('search-input').value.toLowerCase().trim().split(' ');
     const slider = document.getElementById('distance-slider');
     const distanceRange = slider.noUiSlider.get().map(Number);
 
@@ -275,21 +274,22 @@ function applyFilters() {
         }
 
         // Search filter
-        if (searchTerm) {
+        if (terms.length > 0) {
             const boat = appData.boats[entry.boat];
             const boatName = boat ? boat.name.toLowerCase() : '';
-
             const crewNames = entry.crew.map(personId => {
                 const person = appData.persons[personId];
                 if (!person) return '';
                 return `${person.fn || ''} ${person.ln || ''}`.toLowerCase();
             }).join(' ');
 
-            if (!boatName.includes(searchTerm) && !crewNames.includes(searchTerm)) {
+            if (!terms.every(term => boatName.includes(term) || crewNames.includes(term))) {
                 return false;
             }
-        }
-
+            console.log("terms", terms)
+            console.log("boat", boatName)
+            console.log("crew", crewNames)
+            }
         return true;
     });
 
