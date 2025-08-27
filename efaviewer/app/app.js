@@ -97,7 +97,7 @@ async function loadData() {
         appData.years = [...new Set(logbooks.map(entry => entry.year))].sort((a, b) => b - a);
 
         // Calculate distance range
-        const distances = appData.logbooks.map(entry => entry.dist || 0).filter(d => d > 0);
+        const distances = logbooks.map(entry => entry.dist || 0).filter(d => d > 0);
         if (distances.length > 0) {
             appData.distanceRange = [0, Math.max(...distances)];
         }
@@ -407,11 +407,11 @@ function updateKmByBoat() {
     const boatKm = {};
 
     appData.logbooks.forEach(entry => {
-        if (selectedYears.length === 0 || selectedYears.includes(entry.year)) {
-            const boat = appData.boats[entry.boat];
-            if (boat && entry.dist) {
-                const boatName = formatBoat(entry.boat);
-                boatKm[boatName] = (boatKm[boatName] || 0) + entry.dist;
+        if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
+            const boat = appData.boats[entry[BOAT_COLUMN]];
+            if (boat && entry[DIST_COLUMN]) {
+                const boatName = formatBoat(entry[BOAT_COLUMN]);
+                boatKm[boatName] = (boatKm[boatName] || 0) + entry[DIST_COLUMN];
             }
         }
     });
@@ -470,12 +470,12 @@ function updateKmByRower() {
     const rowerKm = {};
 
     appData.logbooks.forEach(entry => {
-        if (selectedYears.length === 0 || selectedYears.includes(entry.year)) {
-            entry.crew.forEach(personId => {
+        if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
+            entry[CREW_COLUMN].forEach(personId => {
                 const person = appData.persons[personId];
-                if (person && entry.dist) {
+                if (person && entry[DIST_COLUMN]) {
                     const rowerName = `${person.fn || ''} ${person.ln || ''}`.trim();
-                    rowerKm[rowerName] = (rowerKm[rowerName] || 0) + entry.dist;
+                    rowerKm[rowerName] = (rowerKm[rowerName] || 0) + entry[DIST_COLUMN];
                 }
             });
         }
@@ -536,8 +536,8 @@ function updateKmOverTime() {
     const timeData = {};
 
     appData.logbooks.forEach(entry => {
-        if (selectedYears.length === 0 || selectedYears.includes(entry.year)) {
-            const [day, month, year] = entry.date.split('.');
+        if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
+            const [day, month, year] = entry[DATE_COLUMN].split('.');
             const monthKey = `${year}-${month.padStart(2, '0')}`;
 
             if (!timeData[monthKey]) {
@@ -545,14 +545,14 @@ function updateKmOverTime() {
             }
 
             if (viewType === 'boat') {
-                const boatName = formatBoat(entry.boat);
-                timeData[monthKey][boatName] = (timeData[monthKey][boatName] || 0) + (entry.dist || 0);
+                const boatName = formatBoat(entry[BOAT_COLUMN]);
+                timeData[monthKey][boatName] = (timeData[monthKey][boatName] || 0) + (entry[DIST_COLUMN] || 0);
             } else {
-                entry.crew.forEach(personId => {
+                entry[CREW_COLUMN].forEach(personId => {
                     const person = appData.persons[personId];
                     if (person) {
                         const rowerName = `${person.fn || ''} ${person.ln || ''}`.trim();
-                        timeData[monthKey][rowerName] = (timeData[monthKey][rowerName] || 0) + (entry.dist || 0);
+                        timeData[monthKey][rowerName] = (timeData[monthKey][rowerName] || 0) + (entry[DIST_COLUMN] || 0);
                     }
                 });
             }
