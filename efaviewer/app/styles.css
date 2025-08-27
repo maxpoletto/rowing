@@ -18,31 +18,29 @@ body {
     padding: 20px;
 }
 
-/* Header */
-header {
-    margin-bottom: 30px;
+/* Logo Container */
+.logo-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
 }
 
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
+.logo {
+    height: 130px;
+    width: auto;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 header h1 {
     color: #2c5aa0;
     font-size: 2.5rem;
     font-weight: 300;
-    text-align: center;
-    flex-grow: 1;
-}
-
-.logo {
-    height: 200px;
-    width: auto;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* Main Navigation Tabs */
@@ -138,7 +136,7 @@ header h1 {
 
 /* Distance Slider */
 #distance-slider {
-    margin: 15px 0 10px 0;
+    margin: 10px 0 10px 0;
     height: 8px;
 }
 
@@ -150,7 +148,8 @@ header h1 {
 }
 
 .noUi-connect {
-    background: #2c5aa0;
+    background: #2c5aa0 !important;
+    color: #2c5aa0 !important;
 }
 
 .noUi-handle {
@@ -277,17 +276,17 @@ header h1 {
         padding: 10px;
     }
 
-    .header-content {
-        flex-direction: column;
-        gap: 15px;
+    .logo-container {
+        top: 10px;
+        right: 10px;
+    }
+
+    .belvoir-logo {
+        height: 80px;
     }
 
     header h1 {
         font-size: 2rem;
-    }
-
-    .belvoir-logo {
-        height: 60px;
     }
 
     .controls {
