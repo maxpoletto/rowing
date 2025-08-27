@@ -228,6 +228,9 @@ function setupEventListeners() {
     // Year select
     document.getElementById('year-select').addEventListener('change', applyFilters);
 
+    // Reset filters button
+    document.getElementById('reset-filters-btn').addEventListener('click', resetFilters);
+
     // Statistics year selects
     document.getElementById('boat-stats-year-select').addEventListener('change', updateStatistics);
     document.getElementById('rower-stats-year-select').addEventListener('change', updateStatistics);
@@ -329,6 +332,21 @@ function applyFilters() {
             return true;
         })
     }, FILTER_TIMEOUT_MS);
+}
+
+// Reset all filters to default state
+function resetFilters() {
+    document.getElementById('search-input').value = '';
+
+    const yearSelect = document.getElementById('year-select');
+    Array.from(yearSelect.options).forEach(option => {
+        option.selected = option.value === appData.years[0].toString();
+    });
+
+    const slider = document.getElementById('distance-slider');
+    slider.noUiSlider.set([0, 100]);
+
+    applyFilters();
 }
 
 // Formatting functions

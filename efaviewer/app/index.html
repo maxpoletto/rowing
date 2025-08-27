@@ -12,7 +12,10 @@
 <body>
     <div class="container">
         <header>
-            <h1>EFA Rowing Logbook Viewer</h1>
+            <div class="header-content">
+                <h1>EFA Rowing Logbook Viewer</h1>
+                <img src="belvoir.jpg" alt="Belvoir Rowing Club" class="belvoir-logo">
+            </div>
         </header>
 
         <nav class="tabs">
@@ -25,21 +28,28 @@
                 <div class="controls">
                     <div class="control-group">
                         <label for="year-select">Years:</label>
-                        <select id="year-select" multiple size="5">
+                        <select id="year-select" multiple size="6" title="Hold Ctrl (Cmd on Mac) or Shift to select multiple years. Click without holding to select only one year.">
                             <!-- Options will be populated by JavaScript -->
                         </select>
                     </div>
 
-                    <div class="control-group">
-                        <label for="search-input">Search (boat/crew):</label>
-                        <input type="text" id="search-input" placeholder="E.g., 'urs steiner', 'max leviathan', ...">
-                    </div>
+                    <div class="search-distance-group">
+                        <div class="control-group">
+                            <label for="search-input">Search (boat/crew):</label>
+                            <input type="text" id="search-input" placeholder="E.g., 'urs steiner', 'max leviathan', ...">
+                        </div>
 
+                        <div class="control-group">
+                            <label for="distance-slider">Distance (km):</label>
+                            <div id="distance-slider"></div>
+                            <div class="slider-values">
+                                <span id="distance-min">0</span> - <span id="distance-max">50</span> km
+                            </div>
+                        </div>
+                    </div>
                     <div class="control-group">
-                        <label for="distance-slider">Distance (km):</label>
-                        <div id="distance-slider"></div>
-                        <div class="slider-values">
-                            <span id="distance-min">0</span> - <span id="distance-max">50</span> km
+                        <div class="reset-button-container">
+                            <button id="reset-filters-btn" class="reset-btn">Reset Filters</button>
                         </div>
                     </div>
                 </div>
@@ -60,7 +70,7 @@
                     <div class="controls">
                         <div class="control-group">
                             <label for="boat-stats-year-select">Years:</label>
-                            <select id="boat-stats-year-select" multiple size="5">
+                            <select id="boat-stats-year-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) or Shift to select multiple years. Click without holding to select only one year.">
                                 <!-- Options will be populated by JavaScript -->
                             </select>
                         </div>
@@ -75,7 +85,7 @@
                     <div class="controls">
                         <div class="control-group">
                             <label for="rower-stats-year-select">Years:</label>
-                            <select id="rower-stats-year-select" multiple size="5">
+                            <select id="rower-stats-year-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) or Shift to select multiple years. Click without holding to select only one year.">
                                 <!-- Options will be populated by JavaScript -->
                             </select>
                         </div>
@@ -90,7 +100,7 @@
                     <div class="controls">
                         <div class="control-group">
                             <label for="time-stats-year-select">Years:</label>
-                            <select id="time-stats-year-select" multiple size="5">
+                            <select id="time-stats-year-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) or Shift to select multiple years. Click without holding to select only one year.">
                                 <!-- Options will be populated by JavaScript -->
                             </select>
                         </div>
