@@ -74,14 +74,17 @@ header h1 {
 
 /* Controls */
 .controls {
+    max-width: 600px;
+    margin: 0 auto;
     background: white;
     padding: 25px;
     border-radius: 8px;
     border: 1px solid #e1e8ed;
     margin-bottom: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 15px 20px;
+    align-items: top;
 }
 
 .stats-controls {
@@ -89,6 +92,36 @@ header h1 {
     flex-direction: row;
     gap: 50px;
     align-items: start;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.control-label {
+    font-weight: 600;
+    color: #2c5aa0;
+    text-align: left;
+    vertical-align: middle;    
+    padding-right: 10px;
+}
+
+.controls input {
+    padding: 10px;
+    border: 2px solid #e1e8ed;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.controls input:focus {
+    outline: none;
+    border-color: #2c5aa0;
+}
+
+.control-group select[multiple] {
+    min-height: 120px;
 }
 
 .search-distance-group {
@@ -99,83 +132,49 @@ header h1 {
 
 .reset-button-container {
     display: flex;
-    align-items: end;
-    height: 150px; /* Approximate height to match the multiselect area */
+    flex-direction: row;
+    align-items: right;
 }
 
-.control-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.control-group label {
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #2c5aa0;
-}
-
-.control-group select,
-.control-group input {
-    padding: 10px;
-    border: 2px solid #e1e8ed;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-}
-
-.control-group select:focus,
-.control-group input:focus {
-    outline: none;
-    border-color: #2c5aa0;
-}
-
-.control-group select[multiple] {
-    min-height: 120px;
-}
-
-/* Distance Slider */
-#distance-slider {
-    margin: 10px 15px 10px 5px;
-    height: 8px;
+.slider {
+    margin: 10px 0
 }
 
 .noUi-target {
-    background: #e1e8ed;
-    border-radius: 4px;
+    background: #e0e0e0;
+    border-radius: 8px;
     border: none;
-    box-shadow: none;
+    height: 5px !important;
+    margin-left: 10px
 }
 
 .noUi-connect {
     background: #2c5aa0 !important;
-    color: #2c5aa0 !important;
+    height: 5px !important;
 }
 
 .noUi-handle {
-    width: 24px !important;
-    height: 24px !important;
-    border-radius: 50%;
+    width: 16px !important;
+    height: 16px !important;
+    border-radius: 50% !important;
     background: #fff;
-    border: 2px solid #2196F3;
+    border: 2px solid #2c5aa0 !important;
     cursor: grab;
     outline: none;
-    top: -8px !important;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    top: -6px !important;
+}
+
+.noUi-handle:active {
+    cursor: grabbing;
+}
+
+.noUi-handle:before, .noUi-handle:after {
+    display: none;
 }
 
 .noUi-handle:before,
 .noUi-handle:after {
-    display: none;
-}
-
-.noUi-horizontal .noUi-handle {
-    right: -12px;
-}
-
-.slider-values {
-    text-align: center;
-    font-weight: 600;
-    color: #2c5aa0;
+    display: none !important;
 }
 
 /* Reset Button */
@@ -183,13 +182,14 @@ header h1 {
     background: #2c5aa0;
     color: white;
     border: none;
-    padding: 8px 12px;
+    padding: 8px 16px;
     border-radius: 6px;
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    width: 100%;
+    justify-self: start;
+    width: 120px;
 }
 
 .reset-btn:hover {

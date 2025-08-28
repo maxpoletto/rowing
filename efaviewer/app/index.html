@@ -6,7 +6,7 @@
     <title>EFA Rowing Logbook Viewer</title>
     <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAANCAMAAACXZR4WAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAFEUExURf////7+/tnf53mdwnydv/z7+/39/tXW1lyErWKQvvf39/7+///9+rW6v2KLtu3x9vn6+/n29JuntObr8f3+/vT09e/u7fv7++bt9NHe6+Lq8urr69rk77XJ36G71q3D26a+2NXb4urw9vP2+sTU5KvB2Zy31KC71tPf673P4sPP3Nvl7rPI3qrB2qrB2dTg7Pb6/a/I4sLV6r3Q49nj7rvO4Z641ajA2Zu207nM4MHS5KS92Nvh6Jqpuba9xdjg6azD26vB2qi/2b3N3ePq8rHH3b/R48PU5aS91+zr6rOwrrOysfj29erx+MnX59vl8Obn6drk7rLI3qvC2cbW5r29vdjY2N/f3+jo6OXl5uPk5MTExfDv7efl483Kx9zh6KC507DF3Ovw9uHh4erq6unp6evr6+fn5uvs7Obm5ubo69fi7KQnTPEAAAABYktHRACIBR1IAAAAB3RJTUUH6QgbDiEaMZS6JgAAAKZJREFUCNdjYIAARgYmZhZWBgRgY2Dn4ORi4EYS4uHl4wcqhAFGbgFBIWG4gIgIkBAVE0fSIiEpJS0CNhysXkZWTl5BkYFBSRmsnkFFVU1dQ1NLW0dXTx8kYmBoZKxrYmpmbmFpZQ1SYGNrZ+/g6OTs4urm7gFS4enl7ePr5x8QGGQeHMIQGhYeERkVHRMbF5+QKJXEwJAckRKRmpYunZGZlQ20gxsAEiAYdVJgL58AAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDgtMjBUMjE6NDI6MTkrMDA6MDBLbueqAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA4LTIwVDIxOjQxOjU4KzAwOjAw8znhWwAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOC0yN1QxNDozMzoyNiswMDowME+vGcMAAAAASUVORK5CYII=">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
     <link rel="stylesheet" href="node_modules/@maxpoletto/sortable-table/src/sortable-table.css">
 </head>
 <body>
@@ -27,31 +27,27 @@
         <main>
             <div id="logbook-tab" class="tab-content active">
                 <div class="controls">
-                    <div class="control-group">
+                    <div class="control-label">
                         <label for="year-slider">Years:</label>
-                        <div id="year-slider"></div>
-                        <div class="slider-values">
-                            <span id="year-min">2011</span> - <span id="year-max">2024</span>
-                        </div>
+                        <span id="year-min">2011</span> - <span id="year-max">2025</span>
+                    </div>
+                    <div class="year-slider-container">
+                        <div id="year-slider" class="slider"></div>
                     </div>
 
-                    <div class="control-group">
-                        <label for="search-input">Search (boat/crew):</label>
-                        <input type="text" id="search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
+                    <div class="control-label">
+                        <label for="distance-slider">Distance:</label>
+                        <span id="distance-min">0</span> - <span id="distance-max">50</span> km
+                    </div>
+                    <div class="distance-slider-container">
+                        <div id="distance-slider" class="slider"></div>
                     </div>
 
-                    <div class="control-group">
-                        <label for="distance-slider">Distance (km):</label>
-                        <div id="distance-slider"></div>
-                        <div class="slider-values">
-                            <span id="distance-min">0</span> - <span id="distance-max">50</span> km
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <div class="reset-button-container">
-                            <button id="reset-filters-btn" class="reset-btn">Reset Filters</button>
-                        </div>
-                    </div>
+                    <div class="control-label">
+                        <label for="search-input">Search:</label>
+                    </div>    
+                    <input type="text" id="search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
+                    <button id="reset-filters-btn" class="reset-btn">Reset Filters</button>
                 </div>
 
                 <div id="logbook-table">
@@ -70,9 +66,9 @@
                     <div class="controls stats-controls">
                         <div class="control-group">
                             <label for="boat-year-slider">Years:</label>
-                            <div id="boat-year-slider"></div>
+                            <div id="boat-year-slider" class="slider"></div>
                             <div class="slider-values">
-                                <span id="boat-year-min">2011</span> - <span id="boat-year-max">2024</span>
+                                <span id="boat-year-min">2011</span> - <span id="boat-year-max">2025</span>
                             </div>
                         </div>
                     </div>
@@ -88,9 +84,9 @@
                     <div class="controls stats-controls">
                         <div class="control-group">
                             <label for="rower-year-slider">Years:</label>
-                            <div id="rower-year-slider"></div>
+                            <div id="rower-year-slider" class="slider"></div>
                             <div class="slider-values">
-                                <span id="rower-year-min">2011</span> - <span id="rower-year-max">2024</span>
+                                <span id="rower-year-min">2011</span> - <span id="rower-year-max">2025</span>
                             </div>
                         </div>
                     </div>
@@ -106,9 +102,9 @@
                     <div class="controls stats-controls">
                         <div class="control-group">
                             <label for="time-year-slider">Years:</label>
-                            <div id="time-year-slider"></div>
+                            <div id="time-year-slider" class="slider"></div>
                             <div class="slider-values">
-                                <span id="time-year-min">2011</span> - <span id="time-year-max">2024</span>
+                                <span id="time-year-min">2011</span> - <span id="time-year-max">2025</span>
                             </div>
                         </div>
 

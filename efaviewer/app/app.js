@@ -461,6 +461,7 @@ function createBarChart(canvasId, labels, data, existingChart) {
             }]
         },
         options: {
+            animation: false,
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
