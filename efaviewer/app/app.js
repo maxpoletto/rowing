@@ -6,6 +6,8 @@ let appData = {
     destinations: {},
     years: [],
     distanceRange: [0, 50],
+    minYear: 0,
+    maxYear: 0
 };
 
 let charts = {
@@ -148,9 +150,10 @@ function initializeTabs() {
     });
 }
 
+
 function initializeSliders() {
-    const minYear = Math.min(...appData.years);
-    const maxYear = Math.max(...appData.years);
+    appData.minYear = Math.min(...appData.years);
+    appData.maxYear = Math.max(...appData.years);
 
     const statsSliders = [
         { id: 'logbook-year-slider', minSpan: 'logbook-year-min', maxSpan: 'logbook-year-max', change: applyLogbookFilters },
@@ -165,8 +168,8 @@ function initializeSliders() {
         const minSpan = document.getElementById(config.minSpan);
         const maxSpan = document.getElementById(config.maxSpan);
 
-        const start = config.start || [maxYear, maxYear+1];
-        const range = config.range || { 'min': minYear, 'max': maxYear+1 };
+        const start = config.start || [appData.maxYear, appData.maxYear+1];
+        const range = config.range || { 'min': appData.minYear, 'max': appData.maxYear+1 };
         noUiSlider.create(slider, {
             start: start,
             connect: true,
@@ -354,7 +357,7 @@ function applyLogbookFilters() {
 function resetLogbookFilters() {
     document.getElementById('logbook-search-input').value = '';
     const yearSlider = document.getElementById('logbook-year-slider');
-    yearSlider.noUiSlider.set([Math.min(...appData.years), Math.max(...appData.years) + 1]);
+    yearSlider.noUiSlider.set([appData.maxYear, appData.maxYear + 1]);
     const distanceSlider = document.getElementById('logbook-dist-slider');
     distanceSlider.noUiSlider.set([0, 100]);
     applyLogbookFilters();
@@ -579,7 +582,7 @@ function updateKmOverTime() {
 
 function resetTimeFilters() {
     const yearSlider = document.getElementById('time-year-slider');
-    yearSlider.noUiSlider.set([Math.min(...appData.years), Math.max(...appData.years) + 1]);
+    yearSlider.noUiSlider.set([appData.maxYear, appData.maxYear + 1]);
     document.getElementById('time-search-input').value = '';
     updateKmOverTime();
 }
