@@ -406,6 +406,7 @@ header h1 {
 .search-help-link {
     text-decoration: none;
     cursor: pointer;
+    color: var(--primary-color);
 }
 
 .search-help-link span {
