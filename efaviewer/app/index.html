@@ -28,24 +28,23 @@
             <div id="logbook-tab" class="tab-content active">
                 <div class="controls">
                     <div class="control-group">
-                        <label for="year-select">Years:</label>
-                        <select id="year-select" multiple size="6" title="Hold Ctrl (Cmd on Mac) or Shift to select multiple years. Click without holding to select only one year.">
-                            <!-- Options will be populated by JavaScript -->
-                        </select>
+                        <label for="year-slider">Years:</label>
+                        <div id="year-slider"></div>
+                        <div class="slider-values">
+                            <span id="year-min">2011</span> - <span id="year-max">2024</span>
+                        </div>
                     </div>
 
-                    <div class="search-distance-group">
-                        <div class="control-group">
-                            <label for="search-input">Search (boat/crew):</label>
-                            <input type="text" id="search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
-                        </div>
+                    <div class="control-group">
+                        <label for="search-input">Search (boat/crew):</label>
+                        <input type="text" id="search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
+                    </div>
 
-                        <div class="control-group">
-                            <label for="distance-slider">Distance (km):</label>
-                            <div id="distance-slider"></div>
-                            <div class="slider-values">
-                                <span id="distance-min">0</span> - <span id="distance-max">50</span> km
-                            </div>
+                    <div class="control-group">
+                        <label for="distance-slider">Distance (km):</label>
+                        <div id="distance-slider"></div>
+                        <div class="slider-values">
+                            <span id="distance-min">0</span> - <span id="distance-max">50</span> km
                         </div>
                     </div>
                     <div class="control-group">
@@ -61,19 +60,20 @@
 
             <div id="statistics-tab" class="tab-content">
                 <nav class="stats-tabs">
-                    <button class="stats-tab-button active" data-stats-tab="km-by-boat">Total km by Boat</button>
-                    <button class="stats-tab-button" data-stats-tab="km-by-rower">Total km by Rower</button>
-                    <button class="stats-tab-button" data-stats-tab="km-over-time">km Over Time</button>
+                    <button class="stats-tab-button active" data-stats-tab="km-by-boat">Kilometers by boat</button>
+                    <button class="stats-tab-button" data-stats-tab="km-by-rower">Kilometers by rower</button>
+                    <button class="stats-tab-button" data-stats-tab="km-over-time">Monthly kilometers</button>
                 </nav>
 
                 <!-- Total km by Boat -->
                 <div id="km-by-boat-tab" class="stats-tab-content active">
-                    <div class="controls">
+                    <div class="controls stats-controls">
                         <div class="control-group">
-                            <label for="boat-stats-year-select">Years:</label>
-                            <select id="boat-stats-year-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) or Shift to select multiple years. Click without holding to select only one year.">
-                                <!-- Options will be populated by JavaScript -->
-                            </select>
+                            <label for="boat-year-slider">Years:</label>
+                            <div id="boat-year-slider"></div>
+                            <div class="slider-values">
+                                <span id="boat-year-min">2011</span> - <span id="boat-year-max">2024</span>
+                            </div>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -85,12 +85,13 @@
 
                 <!-- Total km by Rower -->
                 <div id="km-by-rower-tab" class="stats-tab-content">
-                    <div class="controls">
+                    <div class="controls stats-controls">
                         <div class="control-group">
-                            <label for="rower-stats-year-select">Years:</label>
-                            <select id="rower-stats-year-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) or Shift to select multiple years. Click without holding to select only one year.">
-                                <!-- Options will be populated by JavaScript -->
-                            </select>
+                            <label for="rower-year-slider">Years:</label>
+                            <div id="rower-year-slider"></div>
+                            <div class="slider-values">
+                                <span id="rower-year-min">2011</span> - <span id="rower-year-max">2024</span>
+                            </div>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -102,19 +103,26 @@
 
                 <!-- km Over Time -->
                 <div id="km-over-time-tab" class="stats-tab-content">
-                    <div class="controls">
+                    <div class="controls stats-controls">
                         <div class="control-group">
-                            <label for="time-stats-year-select">Years:</label>
-                            <select id="time-stats-year-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) or Shift to select multiple years. Click without holding to select only one year.">
+                            <label for="time-year-slider">Years:</label>
+                            <div id="time-year-slider"></div>
+                            <div class="slider-values">
+                                <span id="time-year-min">2011</span> - <span id="time-year-max">2024</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="boat-select">Boats:</label>
+                            <select id="boat-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) to select multiple boats. Leave empty for all boats.">
                                 <!-- Options will be populated by JavaScript -->
                             </select>
                         </div>
 
                         <div class="control-group">
-                            <label for="time-stats-type">View by:</label>
-                            <select id="time-stats-type">
-                                <option value="boat">Boat</option>
-                                <option value="rower">Rower</option>
+                            <label for="rower-select">Rowers:</label>
+                            <select id="rower-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) to select multiple rowers. Leave empty for all rowers.">
+                                <!-- Options will be populated by JavaScript -->
                             </select>
                         </div>
                     </div>

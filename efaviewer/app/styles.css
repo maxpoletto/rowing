@@ -79,8 +79,14 @@ header h1 {
     border-radius: 8px;
     border: 1px solid #e1e8ed;
     margin-bottom: 30px;
-    display: grid;
-    grid-template-columns: 250px 500px 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.stats-controls {
+    display: flex;
+    flex-direction: row;
     gap: 50px;
     align-items: start;
 }

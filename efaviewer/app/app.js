@@ -87,7 +87,7 @@ async function loadData() {
 // Initialize UI components
 function initializeUI() {
     initializeTabs();
-    populateYearSelects();
+    initializeYearAndSelects();
     initializeDistanceSlider();
     initializeTable();
     initializeStatistics();
@@ -136,29 +136,99 @@ function initializeTabs() {
     });
 }
 
-// Populate year select elements
-function populateYearSelects() {
-    const yearSelects = [
-        'year-select',
-        'boat-stats-year-select',
-        'rower-stats-year-select',
-        'time-stats-year-select'
+// Initialize year slider and boat/rower selects
+function initializeYearAndSelects() {
+    const minYear = 2011;
+    const maxYear = Math.max(...appData.years) + 1;
+    const currentYear = new Date().getFullYear();
+
+    // Initialize logbook year slider
+    const yearSlider = document.getElementById('year-slider');
+    const minSpan = document.getElementById('year-min');
+    const maxSpan = document.getElementById('year-max');
+
+    noUiSlider.create(yearSlider, {
+        start: [currentYear, currentYear+1],
+        connect: true,
+        range: {
+            'min': minYear,
+            'max': maxYear
+        },
+        step: 1,
+        tooltips: false,
+        format: {
+            to: value => Math.round(value),
+            from: value => Number(value)
+        }
+    });
+
+    yearSlider.noUiSlider.on('update', (values) => {
+        minSpan.textContent = values[0];
+        maxSpan.textContent = values[1];
+    });
+
+    yearSlider.noUiSlider.on('change', applyFilters);
+
+    // Initialize statistics year sliders
+    const statsSliders = [
+        { id: 'boat-year-slider', minSpan: 'boat-year-min', maxSpan: 'boat-year-max' },
+        { id: 'rower-year-slider', minSpan: 'rower-year-min', maxSpan: 'rower-year-max' },
+        { id: 'time-year-slider', minSpan: 'time-year-min', maxSpan: 'time-year-max' }
     ];
 
-    yearSelects.forEach(selectId => {
-        const select = document.getElementById(selectId);
-        select.innerHTML = '';
+    statsSliders.forEach(config => {
+        const slider = document.getElementById(config.id);
+        const minSpan = document.getElementById(config.minSpan);
+        const maxSpan = document.getElementById(config.maxSpan);
 
-        appData.years.forEach(year => {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            // Select most recent year by default
-            if (year === appData.years[0]) {
-                option.selected = true;
+        noUiSlider.create(slider, {
+            start: [currentYear, currentYear],
+            connect: true,
+            range: {
+                'min': minYear,
+                'max': maxYear
+            },
+            step: 1,
+            tooltips: false,
+            format: {
+                to: value => Math.round(value),
+                from: value => Number(value)
             }
-            select.appendChild(option);
         });
+
+        slider.noUiSlider.on('update', (values) => {
+            minSpan.textContent = values[0];
+            maxSpan.textContent = values[1];
+        });
+
+        slider.noUiSlider.on('change', updateStatistics);
+    });
+
+    // Populate boat select
+    const boatSelect = document.getElementById('boat-select');
+    const boatNames = Object.values(appData.boats)
+        .map(boat => boat.suffix ? `${boat.name} (${boat.suffix})` : boat.name)
+        .sort();
+
+    boatNames.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        boatSelect.appendChild(option);
+    });
+
+    // Populate rower select
+    const rowerSelect = document.getElementById('rower-select');
+    const rowerNames = Object.values(appData.persons)
+        .map(person => `${person.fn || ''} ${person.ln || ''}`.trim())
+        .filter(name => name)
+        .sort();
+
+    rowerNames.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        rowerSelect.appendChild(option);
     });
 }
 
@@ -201,17 +271,12 @@ function setupEventListeners() {
     // Search input
     document.getElementById('search-input').addEventListener('input', applyFilters);
 
-    // Year select
-    document.getElementById('year-select').addEventListener('change', applyFilters);
-
     // Reset filters button
     document.getElementById('reset-filters-btn').addEventListener('click', resetFilters);
 
-    // Statistics year selects
-    document.getElementById('boat-stats-year-select').addEventListener('change', updateStatistics);
-    document.getElementById('rower-stats-year-select').addEventListener('change', updateStatistics);
-    document.getElementById('time-stats-year-select').addEventListener('change', updateStatistics);
-    document.getElementById('time-stats-type').addEventListener('change', updateStatistics);
+    // Monthly stats selects
+    document.getElementById('boat-select').addEventListener('change', updateStatistics);
+    document.getElementById('rower-select').addEventListener('change', updateStatistics);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -310,15 +375,16 @@ function applyFilters() {
         clearTimeout(filterTimer);
     }
     filterTimer = setTimeout(() => {
-        const selectedYears = Array.from(document.getElementById('year-select').selectedOptions)
-            .map(option => parseInt(option.value));
+        const yearSlider = document.getElementById('year-slider');
+        const yearRange = yearSlider.noUiSlider.get().map(Number);
         const terms = document.getElementById('search-input').value.toLowerCase().trim().split(' ');
-        const slider = document.getElementById('distance-slider');
-        const distanceRange = slider.noUiSlider.get().map(Number);
+        const distanceSlider = document.getElementById('distance-slider');
+        const distanceRange = distanceSlider.noUiSlider.get().map(Number);
 
         appData.logbookTable.filter(entry => {
             // Year filter
-            if (selectedYears.length > 0 && !selectedYears.includes(entry[YEAR_COLUMN])) {
+            const year = entry[YEAR_COLUMN];
+            if (year < yearRange[0] || year > yearRange[1]) {
                 return false;
             }
 
@@ -347,13 +413,12 @@ function applyFilters() {
 function resetFilters() {
     document.getElementById('search-input').value = '';
 
-    const yearSelect = document.getElementById('year-select');
-    Array.from(yearSelect.options).forEach(option => {
-        option.selected = option.value === appData.years[0].toString();
-    });
+    const currentYear = new Date().getFullYear();
+    const yearSlider = document.getElementById('year-slider');
+    yearSlider.noUiSlider.set([currentYear, currentYear]);
 
-    const slider = document.getElementById('distance-slider');
-    slider.noUiSlider.set([0, 100]);
+    const distanceSlider = document.getElementById('distance-slider');
+    distanceSlider.noUiSlider.set([0, 100]);
 
     applyFilters();
 }
@@ -419,11 +484,12 @@ function createBarChart(canvasId, labels, data, existingChart) {
     });
 }
 
-function updateDistanceByEntity(selectedYears, entityExtractor, canvasId, tableContainer, existingChart, existingTable) {
+function updateDistanceByEntity(yearRange, entityExtractor, canvasId, tableContainer, existingChart, existingTable) {
     const entityKm = {};
 
     appData.logbooks.forEach(entry => {
-        if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
+        const year = entry[YEAR_COLUMN];
+        if (year >= yearRange[0] && year <= yearRange[1]) {
             const entities = entityExtractor(entry);
             entities.forEach(entityName => {
                 entityKm[entityName] = (entityKm[entityName] || 0) + entry[DIST_COLUMN];
@@ -493,13 +559,13 @@ function updateStatistics() {
 }
 
 function updateKmByBoat() {
-    const selectedYears = Array.from(document.getElementById('boat-stats-year-select').selectedOptions)
-        .map(option => parseInt(option.value));
+    const yearSlider = document.getElementById('boat-year-slider');
+    const yearRange = yearSlider.noUiSlider.get().map(Number);
 
     const boatExtractor = (entry) => [entry[BOAT_COLUMN]];
 
     const { chart, table } = updateDistanceByEntity(
-        selectedYears,
+        yearRange,
         boatExtractor,
         'boat-chart',
         '#boat-table',
@@ -512,13 +578,13 @@ function updateKmByBoat() {
 }
 
 function updateKmByRower() {
-    const selectedYears = Array.from(document.getElementById('rower-stats-year-select').selectedOptions)
-        .map(option => parseInt(option.value));
+    const yearSlider = document.getElementById('rower-year-slider');
+    const yearRange = yearSlider.noUiSlider.get().map(Number);
 
     const rowerExtractor = (entry) => entry[CREW_COLUMN].split(',').map(name => name.trim());
 
     const { chart, table } = updateDistanceByEntity(
-        selectedYears,
+        yearRange,
         rowerExtractor,
         'rower-chart',
         '#rower-table',
@@ -531,71 +597,67 @@ function updateKmByRower() {
 }
 
 function updateKmOverTime() {
-    const selectedYears = Array.from(document.getElementById('time-stats-year-select').selectedOptions)
-        .map(option => parseInt(option.value));
-    const viewType = document.getElementById('time-stats-type').value;
+    const yearSlider = document.getElementById('time-year-slider');
+    const yearRange = yearSlider.noUiSlider.get().map(Number);
 
-    const timeData = {};
+    const selectedBoats = Array.from(document.getElementById('boat-select').selectedOptions)
+        .map(option => option.value);
+    const selectedRowers = Array.from(document.getElementById('rower-select').selectedOptions)
+        .map(option => option.value);
+
+    const monthlyTotals = {};
 
     appData.logbooks.forEach(entry => {
-        if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
-            const [day, month, year] = entry[DATE_COLUMN].split('.');
-            const monthKey = `${year}-${month.padStart(2, '0')}`;
-
-            if (!timeData[monthKey]) {
-                timeData[monthKey] = {};
+        const year = entry[YEAR_COLUMN];
+        if (year >= yearRange[0] && year <= yearRange[1]) {
+            // Apply boat filter if any boats are selected
+            if (selectedBoats.length > 0) {
+                const boatName = entry[BOAT_COLUMN];
+                if (!selectedBoats.includes(boatName)) {
+                    return;
+                }
             }
 
-            if (viewType === 'boat') {
-                const boatName = formatBoat(entry[BOAT_COLUMN]);
-                timeData[monthKey][boatName] = (timeData[monthKey][boatName] || 0) + (entry[DIST_COLUMN] || 0);
+            // Apply rower filter if any rowers are selected
+            if (selectedRowers.length > 0) {
+                const rowerNames = entry[CREW_COLUMN].split(',').map(name => name.trim());
+                const hasSelectedRower = rowerNames.some(rower => selectedRowers.includes(rower));
+                if (!hasSelectedRower) {
+                    return;
+                }
+            }
+
+            // Extract date and create month key
+            const date = entry[DATE_COLUMN];
+            let monthKey;
+            if (typeof date === 'string' && date.includes('.')) {
+                const [day, month, yearStr] = date.split('.');
+                monthKey = `${yearStr}-${month.padStart(2, '0')}`;
             } else {
-                entry[CREW_COLUMN].forEach(personId => {
-                    const person = appData.persons[personId];
-                    if (person) {
-                        const rowerName = `${person.fn || ''} ${person.ln || ''}`.trim();
-                        timeData[monthKey][rowerName] = (timeData[monthKey][rowerName] || 0) + (entry[DIST_COLUMN] || 0);
-                    }
-                });
+                const d = new Date(date);
+                monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
             }
+
+            monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + (entry[DIST_COLUMN] || 0);
         }
     });
 
-    // Get all unique entities and months
-    const allEntities = new Set();
-    const sortedMonths = Object.keys(timeData).sort();
+    // Create sorted list of months in range
+    const allMonths = [];
+    for (let year = yearRange[0]; year <= yearRange[1]; year++) {
+        for (let month = 1; month <= 12; month++) {
+            const monthKey = `${year}-${month.toString().padStart(2, '0')}`;
+            allMonths.push(monthKey);
+        }
+    }
 
-    Object.values(timeData).forEach(monthData => {
-        Object.keys(monthData).forEach(entity => allEntities.add(entity));
+    const labels = allMonths.map(month => {
+        const [year, monthNum] = month.split('-');
+        const date = new Date(year, monthNum - 1);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
     });
 
-    // Get top 10 entities by total distance
-    const entityTotals = {};
-    Array.from(allEntities).forEach(entity => {
-        entityTotals[entity] = Object.values(timeData)
-            .reduce((total, monthData) => total + (monthData[entity] || 0), 0);
-    });
-
-    const topEntities = Object.entries(entityTotals)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
-        .map(([entity]) => entity);
-
-    // Create datasets for each entity
-    const datasets = topEntities.map((entity, index) => {
-        const colors = [
-            '#2c5aa0', '#e74c3c', '#27ae60', '#f39c12', '#9b59b6',
-            '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#d35400'
-        ];
-
-        return {
-            label: entity,
-            data: sortedMonths.map(month => timeData[month][entity] || 0),
-            backgroundColor: colors[index % colors.length],
-            borderColor: colors[index % colors.length],
-            borderWidth: 1
-        };
-    });
+    const data = allMonths.map(month => monthlyTotals[month] || 0);
 
     if (statsCharts.time) {
         statsCharts.time.destroy();
@@ -605,32 +667,35 @@ function updateKmOverTime() {
     statsCharts.time = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: sortedMonths.map(month => {
-                const [year, monthNum] = month.split('-');
-                const date = new Date(year, monthNum - 1);
-                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-            }),
-            datasets: datasets
+            labels: labels,
+            datasets: [{
+                label: 'Total km',
+                data: data,
+                backgroundColor: '#2c5aa0',
+                borderColor: '#1a3d6b',
+                borderWidth: 1
+            }]
         },
         options: {
+            animation: false,
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 title: {
-                    display: true,
-                    text: `Kilometers Over Time by ${viewType === 'boat' ? 'Boat' : 'Rower'}`
+                    display: false
+                },
+                legend: {
+                    display: false
                 }
             },
             scales: {
                 x: {
-                    stacked: true,
                     title: {
                         display: true,
                         text: 'Month'
                     }
                 },
                 y: {
-                    stacked: true,
                     beginAtZero: true,
                     title: {
                         display: true,
