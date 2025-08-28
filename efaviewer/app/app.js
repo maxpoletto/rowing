@@ -6,10 +6,21 @@ let appData = {
     destinations: {},
     years: [],
     distanceRange: [0, 50],
-    logbookTable: null
 };
 
-// Column indices in appData.logbooks
+let charts = {
+    boat: null,
+    rower: null,
+    time: null
+};
+
+let tables = {
+    logbook: null,
+    boat: null,
+    rower: null
+};
+
+// Column indices in tables.logbook
 const YEAR_COLUMN = 0;
 const DATE_COLUMN = 1;
 const BOAT_COLUMN = 2;
@@ -86,14 +97,12 @@ async function loadData() {
     }
 }
 
-// Initialize UI components
 function initializeUI() {
     initializeTabs();
     initializeSliders();
     initializeTable();
 }
 
-// Tab functionality
 function initializeTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -259,7 +268,7 @@ function initializeTable() {
         },
         {
             key: 'dist',
-            label: 'Distance',
+            label: 'Distance (km)',
             type: 'number',
             width: '80px',
         },
@@ -270,7 +279,7 @@ function initializeTable() {
         }
     ];
 
-    appData.logbookTable = new SortableTable({
+    tables.logbook = new SortableTable({
         container: '#logbook-table',
         data: appData.logbooks,
         columns: columns,
@@ -296,7 +305,7 @@ function applyLogbookFilters() {
         const distanceRange = distanceSlider.noUiSlider.get().map(Number);
         const terms = extractTerms('logbook-search-input');
 
-        appData.logbookTable.filter(entry => {
+        tables.logbook.filter(entry => {
             // Year filter
             const year = entry[YEAR_COLUMN];
             if (year < yearRange[0] || year >= yearRange[1]) {
@@ -338,17 +347,6 @@ function resetLogbookFilters() {
 // Statistics
 ////////////////////////////////////////////////////////////////////////////
 
-let statsCharts = {
-    boat: null,
-    rower: null,
-    time: null
-};
-
-let statsTables = {
-    boat: null,
-    rower: null
-};
-
 function updateStatistics() {
     const activeStatsTab = document.querySelector('.stats-tab-button.active').dataset.statsTab;
 
@@ -364,10 +362,6 @@ function updateStatistics() {
             break;
     }
 }
-
-////////////////////////////////////////////////////////////////////////////
-// Statistics: km by entity
-////////////////////////////////////////////////////////////////////////////
 
 function createBarChart(canvasId, title, xtitle, ytitle, labels, data, existingChart) {
     if (existingChart) {
@@ -419,6 +413,10 @@ function createBarChart(canvasId, title, xtitle, ytitle, labels, data, existingC
     });
 }
 
+////////////////////////////////////////////////////////////////////////////
+// Statistics: distance by entity
+////////////////////////////////////////////////////////////////////////////
+
 function updateDistanceByEntity(yearRange, entityExtractor, canvasId, tableContainer, existingChart, existingTable) {
     const entityKm = {};
 
@@ -439,46 +437,39 @@ function updateDistanceByEntity(yearRange, entityExtractor, canvasId, tableConta
     // Chart shows top 20
     const chartLabels = sortedData.slice(0, 20).map(([name]) => name);
     const chartData = sortedData.slice(0, 20).map(([, km]) => km);
-
     const chart = createBarChart(canvasId, null, null, 'Distance (km)', chartLabels, chartData, existingChart);
 
-    // Table shows all data
-    const tableData = sortedData.map(([name, km]) => [name, km]);
-
-    const columns = [
-        {
-            key: 'name',
-            label: 'Name',
-            type: 'string',
-        },
-        {
-            key: 'km',
-            label: 'Kilometers',
-            type: 'number',
-            width: '80px'
-        }
-    ];
-
-    if (existingTable) {
-        existingTable.destroy();
+    let table = existingTable;
+    if (!table) {
+        table = new SortableTable({
+            container: tableContainer,
+            data: sortedData,
+            columns: [
+                {
+                    key: 'name',
+                    label: 'Name',
+                    type: 'string',
+                },
+                {
+                    key: 'km',
+                    label: 'Kilometers',
+                    type: 'number',
+                    width: '80px'
+                }
+            ],
+            rowsPerPage: 25,
+            showPagination: true,
+            allowSorting: true,
+            sort: { column: 'km', ascending: false },
+            emptyMessage: 'No data found'
+        });
+    } else {
+        table.setData(sortedData);
     }
-
-    const table = new SortableTable({
-        container: tableContainer,
-        data: tableData,
-        columns: columns,
-        rowsPerPage: 25,
-        showPagination: true,
-        allowSorting: true,
-        sort: { column: 'km', ascending: false },
-        emptyMessage: 'No data found'
-    });
-
     return { chart, table };
 }
 
 function updateKmByBoat() {
-    console.log('updateKmByBoat');
     const yearSlider = document.getElementById('boat-year-slider');
     const yearRange = yearSlider.noUiSlider.get().map(Number);
 
@@ -489,16 +480,15 @@ function updateKmByBoat() {
         boatExtractor,
         'boat-chart',
         '#boat-table',
-        statsCharts.boat,
-        statsTables.boat
+        charts.boat,
+        tables.boat
     );
 
-    statsCharts.boat = chart;
-    statsTables.boat = table;
+    charts.boat = chart;
+    tables.boat = table;
 }
 
 function updateKmByRower() {
-    console.log('updateKmByRower');
     const yearSlider = document.getElementById('rower-year-slider');
     const yearRange = yearSlider.noUiSlider.get().map(Number);
 
@@ -509,12 +499,12 @@ function updateKmByRower() {
         rowerExtractor,
         'rower-chart',
         '#rower-table',
-        statsCharts.rower,
-        statsTables.rower
+        charts.rower,
+        tables.rower
     );
 
-    statsCharts.rower = chart;
-    statsTables.rower = table;
+    charts.rower = chart;
+    tables.rower = table;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -522,7 +512,6 @@ function updateKmByRower() {
 ////////////////////////////////////////////////////////////////////////////
 
 function updateKmOverTime() {
-    console.log('updateKmOverTime');
     const yearSlider = document.getElementById('time-year-slider');
     const yearRange = yearSlider.noUiSlider.get().map(Number);
     const terms = extractTerms('time-search-input');
@@ -568,7 +557,7 @@ function updateKmOverTime() {
     const scope = terms.length > 0 ? `("${terms.join('" AND "')}")` : 'the whole club';
     const title = `Monthly kilometers from 1.1.${yearRange[0]} to 1.1.${yearRange[1]} for ${scope}`;
 
-    statsCharts.time = createBarChart('time-chart', title, 'Month', 'Distance (km)', labels, data, statsCharts.time);
+    charts.time = createBarChart('time-chart', title, 'Month', 'Distance (km)', labels, data, charts.time);
 }
 
 function resetTimeFilters() {
