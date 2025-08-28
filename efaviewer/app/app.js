@@ -9,7 +9,15 @@ let appData = {
     logbookTable: null
 };
 
-// Initialize the application
+// Column indices in appData.logbooks
+const YEAR_COLUMN = 0;
+const DATE_COLUMN = 1;
+const BOAT_COLUMN = 2;
+const CREW_COLUMN = 3;
+const DIST_COLUMN = 4;
+const DEST_COLUMN = 5;
+
+// Entry point
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         await loadData();
@@ -22,38 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-function formatDate(date) {
-    // Parse european-style dates, DD.MM.YYYY
-    let d;
-    if (typeof date === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
-        const [day, month, year] = date.split('.').map(Number);
-        d = new Date(year, month - 1, day);
-    } else {
-        d = new Date(date);
-    }
-    return d;
-}
-
-function formatBoat(boatId) {
-    const boat = appData.boats[boatId];
-    if (!boat) return 'Unknown';
-    return boat.suffix ? `${boat.name} (${boat.suffix})` : boat.name;
-}
-
-function formatCrew(crewIds) {
-    return crewIds.map(personId => {
-        const person = appData.persons[personId];
-        if (!person) return 'Unknown';
-        return `${person.fn || ''} ${person.ln || ''}`.trim();
-    }).join(', ');
-}
-
-function formatDestination(destId) {
-    const dest = appData.destinations[destId];
-    return dest ? dest.name : 'Unknown';
-}
-
-// Load JSON data files
 async function loadData() {
     try {
         const [logbooksResponse, boatsResponse, personsResponse, destinationsResponse] = await Promise.all([
@@ -238,12 +214,44 @@ function setupEventListeners() {
     document.getElementById('time-stats-type').addEventListener('change', updateStatistics);
 }
 
-const YEAR_COLUMN = 0;
-const DATE_COLUMN = 1;
-const BOAT_COLUMN = 2;
-const CREW_COLUMN = 3;
-const DIST_COLUMN = 4;
-const DEST_COLUMN = 5;
+////////////////////////////////////////////////////////////////////////////
+// Helpers
+////////////////////////////////////////////////////////////////////////////
+
+function formatDate(date) {
+    // Parse european-style dates, DD.MM.YYYY
+    let d;
+    if (typeof date === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+        const [day, month, year] = date.split('.').map(Number);
+        d = new Date(year, month - 1, day);
+    } else {
+        d = new Date(date);
+    }
+    return d;
+}
+
+function formatBoat(boatId) {
+    const boat = appData.boats[boatId];
+    if (!boat) return 'Unknown';
+    return boat.suffix ? `${boat.name} (${boat.suffix})` : boat.name;
+}
+
+function formatCrew(crewIds) {
+    return crewIds.map(personId => {
+        const person = appData.persons[personId];
+        if (!person) return 'Unknown';
+        return `${person.fn || ''} ${person.ln || ''}`.trim();
+    }).join(', ');
+}
+
+function formatDestination(destId) {
+    const dest = appData.destinations[destId];
+    return dest ? dest.name : 'Unknown';
+}
+
+////////////////////////////////////////////////////////////////////////////
+// Logbook
+////////////////////////////////////////////////////////////////////////////
 
 function initializeTable() {
     const columns = [
@@ -350,27 +358,10 @@ function resetFilters() {
     applyFilters();
 }
 
-// Formatting functions
-function formatBoat(boatId) {
-    const boat = appData.boats[boatId];
-    if (!boat) return 'Unknown';
-    return boat.suffix ? `${boat.name} (${boat.suffix})` : boat.name;
-}
+////////////////////////////////////////////////////////////////////////////
+// Statistics
+////////////////////////////////////////////////////////////////////////////
 
-function formatCrew(crewIds) {
-    return crewIds.map(personId => {
-        const person = appData.persons[personId];
-        if (!person) return 'Unknown';
-        return `${person.fn || ''} ${person.ln || ''}`.trim();
-    }).join(', ');
-}
-
-function formatDestination(destId) {
-    const dest = appData.destinations[destId];
-    return dest ? dest.name : 'Unknown';
-}
-
-// Statistics functionality
 let statsCharts = {
     boat: null,
     rower: null,
@@ -379,9 +370,6 @@ let statsCharts = {
 
 function initializeStatistics() {
     // Initialize Chart.js default settings
-    Chart.defaults.font.family = 'inherit';
-    Chart.defaults.font.size = 12;
-    Chart.defaults.plugins.legend.position = 'top';
 }
 
 function updateStatistics() {
@@ -408,13 +396,12 @@ function updateKmByBoat() {
 
     appData.logbooks.forEach(entry => {
         if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
-            const boat = appData.boats[entry[BOAT_COLUMN]];
-            if (boat && entry[DIST_COLUMN]) {
-                const boatName = formatBoat(entry[BOAT_COLUMN]);
-                boatKm[boatName] = (boatKm[boatName] || 0) + entry[DIST_COLUMN];
-            }
+            const boatName = entry[BOAT_COLUMN];
+            boatKm[boatName] = (boatKm[boatName] || 0) + entry[DIST_COLUMN];
         }
     });
+
+    console.log(boatKm);
 
     // Sort by distance and take top 20
     const sortedData = Object.entries(boatKm)
@@ -471,12 +458,9 @@ function updateKmByRower() {
 
     appData.logbooks.forEach(entry => {
         if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
-            entry[CREW_COLUMN].forEach(personId => {
-                const person = appData.persons[personId];
-                if (person && entry[DIST_COLUMN]) {
-                    const rowerName = `${person.fn || ''} ${person.ln || ''}`.trim();
-                    rowerKm[rowerName] = (rowerKm[rowerName] || 0) + entry[DIST_COLUMN];
-                }
+            entry[CREW_COLUMN].split(',').forEach(term => {
+                const rowerName = term.trim();
+                rowerKm[rowerName] = (rowerKm[rowerName] || 0) + entry[DIST_COLUMN];
             });
         }
     });
