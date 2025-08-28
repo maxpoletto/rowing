@@ -29,30 +29,30 @@
                 <div class="controls-container">
                     <div class="controls-grid">
                         <div class="control-label">
-                            <label for="year-slider">Years:</label>
+                            <label for="logbook-year-slider">Years:</label>
                         </div>
                         <div class="control-value"</div>
-                            1.1.<span class="year-value" id="year-min">2011</span>&nbsp;&ndash;&nbsp;1.1.<span class="year-value" id="year-max">2025</span>
+                            1.1.<span class="year-value" id="logbook-year-min">2011</span>&nbsp;&ndash;&nbsp;1.1.<span class="year-value" id="logbook-year-max">2025</span>
                         </div>
                         <div class="year-slider-container">
-                            <div id="year-slider" class="slider"></div>
+                            <div id="logbook-year-slider" class="slider"></div>
                         </div>
 
                         <div class="control-label">
-                            <label for="dist-slider">Distance:</label>
+                            <label for="logbook-dist-slider">Distance:</label>
                         </div>
                         <div class="control-value">
-                            <span class="dist-value" id="dist-min">0</span>&nbsp;&ndash;&nbsp;<span class="dist-value" id="dist-max">50</span> &nbsp;km
+                            <span class="dist-value" id="logbook-dist-min">0</span>&nbsp;&ndash;&nbsp;<span class="dist-value" id="logbook-dist-max">50</span> &nbsp;km
                         </div>
                         <div class="dist-slider-container">
-                            <div id="dist-slider" class="slider"></div>
+                            <div id="logbook-dist-slider" class="slider"></div>
                         </div>
                         <div class="control-label">
-                            <label for="search-input" style="display: flex; align-items: center; height: 100%;">Search:</label>
+                            <label for="logbook-search-input" style="display: flex; align-items: center; height: 100%;">Search:</label>
                         </div>
-                        <input type="text" id="search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
+                        <input type="text" class="search-input" id="logbook-search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
                     </div>
-                    <button id="reset-filters-btn" class="reset-btn">Reset Filters</button>
+                    <button id="logbook-reset-btn" class="reset-btn">Reset Filters</button>
                 </div>
 
                 <div id="logbook-table">
@@ -109,30 +109,24 @@
                     </div>
                 </div>
 
-                <!-- km Over Time -->
                 <div id="km-over-time-tab" class="stats-tab-content">
-                    <div class="controls stats-controls">
-                        <div class="control-group">
-                            <label for="time-year-slider">Years:</label>
-                            <div id="time-year-slider" class="slider"></div>
-                            <div class="slider-values">
-                                <span id="time-year-min">2011</span> - <span id="time-year-max">2025</span>
+                    <div class="controls-container">
+                        <div class="controls-grid">
+                            <div class="control-label">
+                                <label for="time-year-slider">Years:</label>
                             </div>
+                            <div class="control-value">
+                                1.1.<span id="time-year-min">2011</span>&nbsp;&ndash;&nbsp;1.1.<span id="time-year-max">2025</span>
+                            </div>
+                            <div class="year-slider-container">
+                                <div id="time-year-slider" class="slider"></div>
+                            </div>
+                            <div class="control-label">
+                                <label for="search-input" style="display: flex; align-items: center; height: 100%;">Search:</label>
+                            </div>
+                            <input type="text" class="search-input" id="time-search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
                         </div>
-
-                        <div class="control-group">
-                            <label for="boat-select">Boats:</label>
-                            <select id="boat-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) to select multiple boats. Leave empty for all boats.">
-                                <!-- Options will be populated by JavaScript -->
-                            </select>
-                        </div>
-
-                        <div class="control-group">
-                            <label for="rower-select">Rowers:</label>
-                            <select id="rower-select" multiple size="5" title="Hold Ctrl (Cmd on Mac) to select multiple rowers. Leave empty for all rowers.">
-                                <!-- Options will be populated by JavaScript -->
-                            </select>
-                        </div>
+                        <button id="time-reset-btn" class="reset-btn">Reset Filters</button>
                     </div>
                     <div class="chart-container">
                         <canvas id="time-chart"></canvas>
