@@ -101,6 +101,9 @@ function initializeUI() {
     initializeTabs();
     initializeSliders();
     initializeTable();
+    document.querySelectorAll('.search-input').forEach(input => {
+        input.placeholder = 'Search for boats, crew, and destinations';
+    });
 }
 
 function initializeTabs() {
@@ -190,6 +193,20 @@ function setupEventListeners() {
     document.getElementById('time-search-input').addEventListener('input', updateKmOverTime);
     document.getElementById('logbook-reset-btn').addEventListener('click', resetLogbookFilters);
     document.getElementById('time-reset-btn').addEventListener('click', resetTimeFilters);
+
+    const helpModal = document.getElementById('search-help-modal');
+    document.querySelectorAll('.search-help-link').forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            helpModal.style.display = 'block';
+        });
+    });
+    helpModal.addEventListener('click', () => {
+        helpModal.style.display = 'none';
+    });
+    helpModal.querySelector('.close-btn').addEventListener('click', () => {
+        helpModal.style.display = 'none';
+    });
 }
 
 ////////////////////////////////////////////////////////////////////////////

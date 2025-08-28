@@ -48,9 +48,11 @@
                             <div id="logbook-dist-slider" class="slider"></div>
                         </div>
                         <div class="control-label">
-                            <label for="logbook-search-input" style="display: flex; align-items: center; height: 100%;">Search:</label>
+                            <label for="logbook-search-input">
+                                Search <a href="#" class="search-help-link"><span>(?)</span></a>
+                            </label>
                         </div>
-                        <input type="text" class="search-input" id="logbook-search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
+                        <input type="text" class="search-input" id="logbook-search-input">
                     </div>
                     <button id="logbook-reset-btn" class="reset-btn">Reset Filters</button>
                 </div>
@@ -122,9 +124,11 @@
                                 <div id="time-year-slider" class="slider"></div>
                             </div>
                             <div class="control-label">
-                                <label for="search-input" style="display: flex; align-items: center; height: 100%;">Search:</label>
+                                <label for="time-search-input">
+                                    Search <a href="#" class="search-help-link"><span>(?)</span></a>
+                                </label>
                             </div>
-                            <input type="text" class="search-input" id="time-search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
+                            <input type="text" class="search-input" id="time-search-input">
                         </div>
                         <button id="time-reset-btn" class="reset-btn">Reset Filters</button>
                     </div>
@@ -132,8 +136,27 @@
                         <canvas id="time-chart"></canvas>
                     </div>
                 </div>
+
             </div>
         </main>
+    </div>
+
+    <div id="search-help-modal">
+        <div class="content">
+            <button class="close-btn">&times;</button>
+            <h3>Search Help</h3>
+            <ul class="search-help-list">
+                <li>
+                    <b>Full match:</b> <code>["urs steiner"]</code> (matches full name)
+                </li>
+                <li>
+                    <b>Keyword match:</b> <code>[max leviathan]</code> (matches keywords)
+                </li>
+            </ul>
+            <p class="search-help-text">
+                Search looks in boat, crew, and destination fields.
+            </p>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.js"></script>

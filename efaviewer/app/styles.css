@@ -359,3 +359,55 @@ header h1 {
         max-height: 350px;
     }
 }
+
+/* Search help modal */
+#search-help-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+#search-help-modal .content {
+    background: white;
+    max-width: 400px;
+    margin: 10vh auto;
+    padding: 24px 20px 16px 20px;
+    border-radius: 8px;
+    position: relative;
+}
+
+#search-help-modal .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.3em;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+#search-help-modal .search-help-list {
+    padding-left: 18px;
+    margin-bottom: 0;
+}
+
+#search-help-modal .search-help-text {
+    margin-top: 10px;
+    font-size: 0.95em;
+    color: #555;
+}
+
+.search-help-link {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.search-help-link span {
+    border-bottom: 1px dotted var(--primary-color);
+}
