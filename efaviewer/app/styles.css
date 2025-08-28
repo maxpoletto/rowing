@@ -145,7 +145,7 @@ header h1 {
     border-radius: 8px;
     border: none;
     height: 5px !important;
-    margin-left: 10px
+    padding: 0 5px !important;
 }
 
 .noUi-connect {
@@ -162,6 +162,7 @@ header h1 {
     cursor: grab;
     outline: none;
     top: -6px !important;
+    margin-right: 10px !important;
 }
 
 .noUi-handle:active {
