@@ -159,7 +159,7 @@ function initializeYearAndSelects() {
         format: {
             to: value => Math.round(value),
             from: value => Number(value)
-        }
+        },
     });
 
     yearSlider.noUiSlider.on('update', (values) => {
@@ -234,9 +234,9 @@ function initializeYearAndSelects() {
 
 // Initialize distance slider
 function initializeDistanceSlider() {
-    const slider = document.getElementById('distance-slider');
-    const minSpan = document.getElementById('distance-min');
-    const maxSpan = document.getElementById('distance-max');
+    const slider = document.getElementById('dist-slider');
+    const minSpan = document.getElementById('dist-min');
+    const maxSpan = document.getElementById('dist-max');
 
     // Create logarithmic range: good resolution up to 20km, then coarser to 100km
     noUiSlider.create(slider, {
@@ -378,7 +378,7 @@ function applyFilters() {
         const yearSlider = document.getElementById('year-slider');
         const yearRange = yearSlider.noUiSlider.get().map(Number);
         const terms = document.getElementById('search-input').value.toLowerCase().trim().split(' ');
-        const distanceSlider = document.getElementById('distance-slider');
+        const distanceSlider = document.getElementById('dist-slider');
         const distanceRange = distanceSlider.noUiSlider.get().map(Number);
 
         appData.logbookTable.filter(entry => {
@@ -416,8 +416,12 @@ function resetFilters() {
     const currentYear = new Date().getFullYear();
     const yearSlider = document.getElementById('year-slider');
     yearSlider.noUiSlider.set([currentYear, currentYear]);
+    // Set year slider to full range and create tick marks for each year
+    if (appData.years && appData.years.length > 0) {
+        yearSlider.noUiSlider.set([Math.min(...appData.years), Math.max(...appData.years)]);
+    }
 
-    const distanceSlider = document.getElementById('distance-slider');
+    const distanceSlider = document.getElementById('dist-slider');
     distanceSlider.noUiSlider.set([0, 100]);
 
     applyFilters();

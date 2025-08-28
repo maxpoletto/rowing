@@ -26,27 +26,32 @@
 
         <main>
             <div id="logbook-tab" class="tab-content active">
-                <div class="controls">
-                    <div class="control-label">
-                        <label for="year-slider">Years:</label>
-                        <span id="year-min">2011</span> - <span id="year-max">2025</span>
-                    </div>
-                    <div class="year-slider-container">
-                        <div id="year-slider" class="slider"></div>
-                    </div>
+                <div class="controls-container">
+                    <div class="controls-grid">
+                        <div class="control-label">
+                            <label for="year-slider">Years:</label>
+                        </div>
+                        <div class="control-value"</div>
+                            1.1.<span class="year-value" id="year-min">2011</span> - 1.1.<span class="year-value" id="year-max">2025</span>
+                        </div>
+                        <div class="year-slider-container">
+                            <div id="year-slider" class="slider"></div>
+                        </div>
 
-                    <div class="control-label">
-                        <label for="distance-slider">Distance:</label>
-                        <span id="distance-min">0</span> - <span id="distance-max">50</span> km
+                        <div class="control-label">
+                            <label for="dist-slider">Distance:</label>
+                        </div>
+                        <div class="control-value">
+                            <span class="dist-value" id="dist-min">0</span> - <span class="dist-value" id="dist-max">50</span> &nbsp;km
+                        </div>
+                        <div class="dist-slider-container">
+                            <div id="dist-slider" class="slider"></div>
+                        </div>
+                        <div class="control-label">
+                            <label for="search-input" style="display: flex; align-items: center; height: 100%;">Search:</label>
+                        </div>
+                        <input type="text" id="search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
                     </div>
-                    <div class="distance-slider-container">
-                        <div id="distance-slider" class="slider"></div>
-                    </div>
-
-                    <div class="control-label">
-                        <label for="search-input">Search:</label>
-                    </div>    
-                    <input type="text" id="search-input" placeholder="E.g., 'urs steiner', 'max leviathan', 'kap alex', ...">
                     <button id="reset-filters-btn" class="reset-btn">Reset Filters</button>
                 </div>
 

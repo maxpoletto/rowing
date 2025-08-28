@@ -73,7 +73,7 @@ header h1 {
 }
 
 /* Controls */
-.controls {
+.controls-container {
     max-width: 600px;
     margin: 0 auto;
     background: white;
@@ -81,8 +81,11 @@ header h1 {
     border-radius: 8px;
     border: 1px solid #e1e8ed;
     margin-bottom: 30px;
+}
+
+.controls-grid {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: auto auto 1fr;
     gap: 15px 20px;
     align-items: top;
 }
@@ -99,41 +102,35 @@ header h1 {
     flex-direction: column;
 }
 
-.control-label {
+.control-label, .control-value {
     font-weight: 600;
     color: #2c5aa0;
-    text-align: left;
-    vertical-align: middle;    
-    padding-right: 10px;
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
-
-.controls input {
+.control-label {
+    text-align: left;
+}
+.control-value {
+    text-align: right;
+}
+.controls-grid input {
     padding: 10px;
     border: 2px solid #e1e8ed;
     border-radius: 6px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
+    grid-column: span 2;
 }
 
-.controls input:focus {
+.controls-container input:focus {
     outline: none;
     border-color: #2c5aa0;
 }
 
 .control-group select[multiple] {
     min-height: 120px;
-}
-
-.search-distance-group {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.reset-button-container {
-    display: flex;
-    flex-direction: row;
-    align-items: right;
 }
 
 .slider {
@@ -183,6 +180,7 @@ header h1 {
     background: #2c5aa0;
     color: white;
     border: none;
+    margin-top: 20px;
     padding: 8px 16px;
     border-radius: 6px;
     font-size: 0.9rem;
