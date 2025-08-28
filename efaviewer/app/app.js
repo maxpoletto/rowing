@@ -5,7 +5,7 @@ let appData = {
     persons: {},
     destinations: {},
     years: [],
-    distanceRange: [0, 50],
+    maxDist: 0,
     minYear: 0,
     maxYear: 0
 };
@@ -90,7 +90,7 @@ async function loadData() {
         // Calculate distance range
         const distances = logbooks.map(entry => entry.dist || 0).filter(d => d > 0);
         if (distances.length > 0) {
-            appData.distanceRange = [0, Math.max(...distances)];
+            appData.maxDist = Math.max(...distances);
         }
 
     } catch (error) {
@@ -158,7 +158,8 @@ function initializeSliders() {
     const statsSliders = [
         { id: 'logbook-year-slider', minSpan: 'logbook-year-min', maxSpan: 'logbook-year-max', change: applyLogbookFilters },
         { id: 'logbook-dist-slider', minSpan: 'logbook-dist-min', maxSpan: 'logbook-dist-max', change: applyLogbookFilters,
-            start: [0, 100], range: { 'min': 0, '20%': 5, '40%': 10, '60%': 20, '80%': 50, 'max': 100 } },
+            start: [0, Math.min(100, appData.maxDist)],
+            range: { 'min': 0, '20%': 5, '40%': 10, '60%': 20, '80%': 50, 'max': appData.maxDist } },
         { id: 'boat-year-slider', minSpan: 'boat-year-min', maxSpan: 'boat-year-max', change: updateStatistics },
         { id: 'rower-year-slider', minSpan: 'rower-year-min', maxSpan: 'rower-year-max', change: updateStatistics },
         { id: 'time-year-slider', minSpan: 'time-year-min', maxSpan: 'time-year-max', change: updateStatistics }
@@ -274,7 +275,7 @@ function initializeTable() {
             label: 'Date',
             type: 'date',
             width: '100px',
-            formatter: (value) => value.toLocaleDateString()
+            formatter: (value) => value.toLocaleDateString('de-DE')
         },
         {
             key: 'boat',
@@ -359,7 +360,7 @@ function resetLogbookFilters() {
     const yearSlider = document.getElementById('logbook-year-slider');
     yearSlider.noUiSlider.set([appData.maxYear, appData.maxYear + 1]);
     const distanceSlider = document.getElementById('logbook-dist-slider');
-    distanceSlider.noUiSlider.set([0, 100]);
+    distanceSlider.noUiSlider.set([0, Math.min(100, appData.maxDist)]);
     applyLogbookFilters();
 }
 
@@ -571,7 +572,7 @@ function updateKmOverTime() {
     const labels = allMonths.map(month => {
         const [year, monthNum] = month.split('-');
         const date = new Date(year, monthNum - 1);
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' }); // Keep this in English for consistency with title
     });
 
     const scope = terms.length > 0 ? `("${terms.join('" AND "')}")` : 'the whole club';
