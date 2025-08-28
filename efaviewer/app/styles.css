@@ -109,11 +109,8 @@ header h1 {
     align-items: center;
     height: 100%;
 }
-.control-label {
-    text-align: left;
-}
 .control-value {
-    text-align: right;
+    justify-content: flex-end;
 }
 .controls-grid input {
     padding: 10px;
