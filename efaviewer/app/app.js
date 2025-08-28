@@ -369,7 +369,7 @@ function updateStatistics() {
 // Statistics: km by entity
 ////////////////////////////////////////////////////////////////////////////
 
-function createBarChart(canvasId, labels, data, existingChart) {
+function createBarChart(canvasId, title, xtitle, ytitle, labels, data, existingChart) {
     if (existingChart) {
         existingChart.destroy();
     }
@@ -393,18 +393,25 @@ function createBarChart(canvasId, labels, data, existingChart) {
             maintainAspectRatio: false,
             plugins: {
                 title: {
-                    display: false,
+                    display: title !== null,
+                    text: title
                 },
                 legend: {
                     display: false
                 }
             },
             scales: {
+                x: {
+                    title: {
+                        display: xtitle !== null,
+                        text: xtitle
+                    }
+                },
                 y: {
                     beginAtZero: true,
                     title: {
-                        display: true,
-                        text: 'Distance (km)'
+                        display: ytitle !== null,
+                        text: ytitle
                     }
                 }
             }
@@ -433,7 +440,7 @@ function updateDistanceByEntity(yearRange, entityExtractor, canvasId, tableConta
     const chartLabels = sortedData.slice(0, 20).map(([name]) => name);
     const chartData = sortedData.slice(0, 20).map(([, km]) => km);
 
-    const chart = createBarChart(canvasId, chartLabels, chartData, existingChart);
+    const chart = createBarChart(canvasId, null, null, 'Distance (km)', chartLabels, chartData, existingChart);
 
     // Table shows all data
     const tableData = sortedData.map(([name, km]) => [name, km]);
@@ -558,56 +565,10 @@ function updateKmOverTime() {
         return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
     });
 
-    if (statsCharts.time) {
-        statsCharts.time.destroy();
-    }
-
     const scope = terms.length > 0 ? `("${terms.join('" AND "')}")` : 'the whole club';
     const title = `Monthly kilometers from 1.1.${yearRange[0]} to 1.1.${yearRange[1]} for ${scope}`;
 
-    const ctx = document.getElementById('time-chart').getContext('2d');
-    statsCharts.time = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Total km',
-                data: data,
-                backgroundColor: '#2c5aa0',
-                borderColor: '#1a3d6b',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            animation: false,
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: title
-                },
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Month'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Distance (km)'
-                    }
-                }
-            }
-        }
-    });
+    statsCharts.time = createBarChart('time-chart', title, 'Month', 'Distance (km)', labels, data, statsCharts.time);
 }
 
 function resetTimeFilters() {
