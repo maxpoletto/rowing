@@ -291,7 +291,7 @@ function initializeTable() {
     ];
 
     appData.logbookTable = new SortableTable({
-        container: '.logbook-table',
+        container: '#logbook-table',
         data: appData.logbooks,
         columns: columns,
         rowsPerPage: 50,
@@ -368,8 +368,112 @@ let statsCharts = {
     time: null
 };
 
+let statsTables = {
+    boat: null,
+    rower: null
+};
+
 function initializeStatistics() {
     // Initialize Chart.js default settings
+}
+
+function createBarChart(canvasId, labels, data, existingChart) {
+    if (existingChart) {
+        existingChart.destroy();
+    }
+
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total km',
+                data: data,
+                backgroundColor: '#2c5aa0',
+                borderColor: '#1a3d6b',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: false,
+                },
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Distance (km)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateDistanceByEntity(selectedYears, entityExtractor, canvasId, tableContainer, existingChart, existingTable) {
+    const entityKm = {};
+
+    appData.logbooks.forEach(entry => {
+        if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
+            const entities = entityExtractor(entry);
+            entities.forEach(entityName => {
+                entityKm[entityName] = (entityKm[entityName] || 0) + entry[DIST_COLUMN];
+            });
+        }
+    });
+
+    // Sort by distance
+    const sortedData = Object.entries(entityKm)
+        .sort((a, b) => b[1] - a[1]);
+
+    // Chart shows top 20
+    const chartLabels = sortedData.slice(0, 20).map(([name]) => name);
+    const chartData = sortedData.slice(0, 20).map(([, km]) => km);
+
+    const chart = createBarChart(canvasId, chartLabels, chartData, existingChart);
+
+    // Table shows all data
+    const tableData = sortedData.map(([name, km]) => [name, km]);
+
+    const columns = [
+        {
+            key: 'name',
+            label: 'Name',
+            type: 'string',
+        },
+        {
+            key: 'km',
+            label: 'Kilometers',
+            type: 'number',
+            width: '80px'
+        }
+    ];
+
+    if (existingTable) {
+        existingTable.destroy();
+    }
+
+    const table = new SortableTable({
+        container: tableContainer,
+        data: tableData,
+        columns: columns,
+        rowsPerPage: 25,
+        showPagination: true,
+        allowSorting: true,
+        sort: { column: 'km', ascending: false },
+        emptyMessage: 'No data found'
+    });
+
+    return { chart, table };
 }
 
 function updateStatistics() {
@@ -392,124 +496,38 @@ function updateKmByBoat() {
     const selectedYears = Array.from(document.getElementById('boat-stats-year-select').selectedOptions)
         .map(option => parseInt(option.value));
 
-    const boatKm = {};
+    const boatExtractor = (entry) => [entry[BOAT_COLUMN]];
 
-    appData.logbooks.forEach(entry => {
-        if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
-            const boatName = entry[BOAT_COLUMN];
-            boatKm[boatName] = (boatKm[boatName] || 0) + entry[DIST_COLUMN];
-        }
-    });
+    const { chart, table } = updateDistanceByEntity(
+        selectedYears,
+        boatExtractor,
+        'boat-chart',
+        '#boat-table',
+        statsCharts.boat,
+        statsTables.boat
+    );
 
-    console.log(boatKm);
-
-    // Sort by distance and take top 20
-    const sortedData = Object.entries(boatKm)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 20);
-
-    const labels = sortedData.map(([name]) => name);
-    const data = sortedData.map(([, km]) => km);
-
-    if (statsCharts.boat) {
-        statsCharts.boat.destroy();
-    }
-
-    const ctx = document.getElementById('boat-chart').getContext('2d');
-    statsCharts.boat = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Total km',
-                data: data,
-                backgroundColor: '#2c5aa0',
-                borderColor: '#1a3d6b',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Total Kilometers by Boat'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Distance (km)'
-                    }
-                }
-            }
-        }
-    });
+    statsCharts.boat = chart;
+    statsTables.boat = table;
 }
 
 function updateKmByRower() {
     const selectedYears = Array.from(document.getElementById('rower-stats-year-select').selectedOptions)
         .map(option => parseInt(option.value));
 
-    const rowerKm = {};
+    const rowerExtractor = (entry) => entry[CREW_COLUMN].split(',').map(name => name.trim());
 
-    appData.logbooks.forEach(entry => {
-        if (selectedYears.length === 0 || selectedYears.includes(entry[YEAR_COLUMN])) {
-            entry[CREW_COLUMN].split(',').forEach(term => {
-                const rowerName = term.trim();
-                rowerKm[rowerName] = (rowerKm[rowerName] || 0) + entry[DIST_COLUMN];
-            });
-        }
-    });
+    const { chart, table } = updateDistanceByEntity(
+        selectedYears,
+        rowerExtractor,
+        'rower-chart',
+        '#rower-table',
+        statsCharts.rower,
+        statsTables.rower
+    );
 
-    // Sort by distance and take top 20
-    const sortedData = Object.entries(rowerKm)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 20);
-
-    const labels = sortedData.map(([name]) => name);
-    const data = sortedData.map(([, km]) => km);
-
-    if (statsCharts.rower) {
-        statsCharts.rower.destroy();
-    }
-
-    const ctx = document.getElementById('rower-chart').getContext('2d');
-    statsCharts.rower = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Total km',
-                data: data,
-                backgroundColor: '#2c5aa0',
-                borderColor: '#1a3d6b',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Total Kilometers by Rower'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Distance (km)'
-                    }
-                }
-            }
-        }
-    });
+    statsCharts.rower = chart;
+    statsTables.rower = table;
 }
 
 function updateKmOverTime() {

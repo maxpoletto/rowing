@@ -77,7 +77,7 @@ header h1 {
     background: white;
     padding: 25px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 1px solid #e1e8ed;
     margin-bottom: 30px;
     display: grid;
     grid-template-columns: 250px 500px 120px;
@@ -252,15 +252,20 @@ header h1 {
 /* Charts */
 .chart-container {
     background: white;
-    padding: 25px;
+    padding: 10px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    height: 500px;
+    border: 1px solid #e1e8ed;
+    height: 450px;
     position: relative;
 }
 
-.chart-container canvas {
-    max-height: 450px;
+.sortable-table-wrapper {
+    border-radius: 8px !important;
+}
+
+.by-km-table {
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 /* Responsive Design */
