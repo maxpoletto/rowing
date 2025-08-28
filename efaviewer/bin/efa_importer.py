@@ -253,6 +253,7 @@ class EfaImporter:
                     # Find the year with the highest count in years
                     most_common_year = max(years, key=years.get)
                     entry["year"] = most_common_year
+                    entry["date"] = f"{entry['date'][:6]}{most_common_year}"
                     self.stats["future_years"] += 1
                     logger.debug(f"Found entry with future year ({entry['date']}), adjusting to {most_common_year}")
                     logger.debug(f"Full XML record: {ET.tostring(record, encoding='utf-8').decode('utf-8')}")
