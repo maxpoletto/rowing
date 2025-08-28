@@ -25,12 +25,13 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    position: relative;
 }
 
 /* Logo Container */
 .logo-container {
     position: absolute;
-    top: 20px;
+    top: 40px;
     right: 20px;
     z-index: 10;
 }
