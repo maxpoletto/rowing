@@ -1,8 +1,24 @@
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #2c5aa0bb;
+    --text-color: #333;
+    --background-color: #ffffff;
+    --border-color: #e1e8ed;
+    --button-hover-color: #417bc8;
+    --button-active-color: #0d2a4a;
+    --active-tab-background: var(--primary-color);
+    --active-tab-text: white;
+    --inactive-tab-background: #f0f4f8;
+    --inactive-tab-text: var(--text-color);
+    --tab-hover-background: var(--secondary-color);
+    --tab-hover-text: var(--text-color);
+}
+
 body {
     font-family: 'Roboto', 'Arial', sans-serif;
     line-height: 1.6;
-    color: #333;
-    background-color: #ffffff;
+    color: var(--text-color);
+    background-color: var(--background-color);
 }
 
 .container {
@@ -31,7 +47,7 @@ header {
 }
 
 header h1 {
-    color: #2c5aa0;
+    color: var(--primary-color);
     font-size: 2.5rem;
     font-weight: 300;
 }
@@ -39,7 +55,7 @@ header h1 {
 /* Main Navigation Tabs */
 .tabs {
     display: flex;
-    border-bottom: 3px solid #2c5aa0;
+    border-bottom: 3px solid var(--primary-color);
     margin-bottom: 30px;
 }
 
@@ -49,18 +65,20 @@ header h1 {
     padding: 15px 30px;
     font-size: 1.1rem;
     cursor: pointer;
-    border-bottom: 3px solid transparent;
     transition: all 0.3s ease;
 }
 
-.tab-button:hover {
-    background-color: #f0f4f8;
-}
-
 .tab-button.active {
-    background-color: #2c5aa0;
-    color: white;
-    border-bottom-color: #1a3d6b;
+    background-color: var(--active-tab-background);
+    color: var(--active-tab-text);
+}
+.tab-button:not(.active) {
+    background-color: var(--inactive-tab-background);
+    color: var(--inactive-tab-text);
+}
+.tab-button:hover {
+    background-color: var(--tab-hover-background);
+    color: var(--tab-hover-text);
 }
 
 /* Tab Content */
@@ -79,7 +97,7 @@ header h1 {
     background: white;
     padding: 25px;
     border-radius: 8px;
-    border: 1px solid #e1e8ed;
+    border: 1px solid var(--border-color);
     margin-bottom: 30px;
 }
 
@@ -114,7 +132,7 @@ header h1 {
 }
 .controls-grid input {
     padding: 10px;
-    border: 2px solid #e1e8ed;
+    border: 2px solid var(--border-color);
     border-radius: 6px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
@@ -123,7 +141,7 @@ header h1 {
 
 .controls-container input:focus {
     outline: none;
-    border-color: #2c5aa0;
+    border-color: var(--primary-color);
 }
 
 .control-group select[multiple] {
@@ -135,7 +153,7 @@ header h1 {
 }
 
 .noUi-target {
-    background: #e0e0e0;
+    background: var(--border-color);
     border-radius: 8px;
     border: none;
     height: 5px !important;
@@ -143,7 +161,7 @@ header h1 {
 }
 
 .noUi-connect {
-    background: #2c5aa0 !important;
+    background: var(--primary-color) !important;
     height: 5px !important;
 }
 
@@ -152,7 +170,7 @@ header h1 {
     height: 16px !important;
     border-radius: 50% !important;
     background: #fff;
-    border: 2px solid #2c5aa0 !important;
+    border: 2px solid var(--primary-color) !important;
     cursor: grab;
     outline: none;
     top: -6px !important;
@@ -174,7 +192,7 @@ header h1 {
 
 /* Reset Button */
 .reset-btn {
-    background: #2c5aa0;
+    background: var(--primary-color);
     color: white;
     border: none;
     margin-top: 20px;
@@ -189,16 +207,16 @@ header h1 {
 }
 
 .reset-btn:hover {
-    background: #1a3d6b;
+    background: var(--button-hover-color);
 }
 
 .reset-btn:active {
-    background: #0d2a4a;
+    background: var(--button-active-color);
 }
 
 /* Table */
 .table-container {
-    background: white;
+    background: var(--background-color);
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     overflow: hidden;
@@ -217,7 +235,7 @@ header h1 {
 /* Statistics Tabs */
 .stats-tabs {
     display: flex;
-    border-bottom: 2px solid #e1e8ed;
+    border-bottom: 2px solid var(--primary-color);
     margin-bottom: 25px;
     flex-wrap: wrap;
 }
@@ -227,19 +245,21 @@ header h1 {
     border: none;
     padding: 12px 20px;
     cursor: pointer;
-    border-bottom: 3px solid transparent;
     transition: all 0.3s ease;
     font-size: 1rem;
 }
 
-.stats-tab-button:hover {
-    background-color: #f0f4f8;
-}
-
 .stats-tab-button.active {
-    background-color: #e8f2ff;
-    color: #2c5aa0;
-    border-bottom-color: #2c5aa0;
+    background-color: var(--active-tab-background);
+    color: var(--active-tab-text);
+}
+.stats-tab-button:not(.active) {
+    background-color: var(--inactive-tab-background);
+    color: var(--inactive-tab-text);
+}
+.stats-tab-button:hover {
+    background-color: var(--tab-hover-background);
+    color: var(--tab-hover-text);
 }
 
 /* Stats Tab Content */
@@ -256,7 +276,7 @@ header h1 {
     background: white;
     padding: 10px;
     border-radius: 8px;
-    border: 1px solid #e1e8ed;
+    border: 1px solid var(--border-color);
     height: 450px;
     position: relative;
 }
@@ -337,21 +357,5 @@ header h1 {
 
     .chart-container canvas {
         max-height: 350px;
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-tabs {
-        flex-direction: column;
-    }
-
-    .stats-tab-button {
-        border-bottom: 1px solid #e1e8ed;
-        border-left: 3px solid transparent;
-    }
-
-    .stats-tab-button.active {
-        border-left-color: #2c5aa0;
-        border-bottom-color: #e1e8ed;
     }
 }
