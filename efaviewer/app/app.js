@@ -70,7 +70,9 @@ async function loadData() {
         ]);
 
         // Extract unique years and sort them
-        appData.years = [...new Set(logbooks.map(entry => entry.year))].sort((a, b) => b - a);
+        appData.years = [...new Set(logbooks.map(entry => entry.year))]
+            .filter(year => year >= 2011) /* Hack until we clean the data */
+            .sort((a, b) => b - a);
 
         // Calculate distance range
         const distances = logbooks.map(entry => entry.dist || 0).filter(d => d > 0);
@@ -138,7 +140,7 @@ function initializeTabs() {
 
 // Initialize year slider and boat/rower selects
 function initializeYearAndSelects() {
-    const minYear = 2011;
+    const minYear = Math.min(...appData.years);
     const maxYear = Math.max(...appData.years) + 1;
     const currentYear = new Date().getFullYear();
 
@@ -384,7 +386,7 @@ function applyFilters() {
         appData.logbookTable.filter(entry => {
             // Year filter
             const year = entry[YEAR_COLUMN];
-            if (year < yearRange[0] || year > yearRange[1]) {
+            if (year < yearRange[0] || year >= yearRange[1]) {
                 return false;
             }
 
@@ -418,7 +420,7 @@ function resetFilters() {
     yearSlider.noUiSlider.set([currentYear, currentYear]);
     // Set year slider to full range and create tick marks for each year
     if (appData.years && appData.years.length > 0) {
-        yearSlider.noUiSlider.set([Math.min(...appData.years), Math.max(...appData.years)]);
+        yearSlider.noUiSlider.set([Math.min(...appData.years), Math.max(...appData.years) + 1]);
     }
 
     const distanceSlider = document.getElementById('dist-slider');
@@ -494,7 +496,7 @@ function updateDistanceByEntity(yearRange, entityExtractor, canvasId, tableConta
 
     appData.logbooks.forEach(entry => {
         const year = entry[YEAR_COLUMN];
-        if (year >= yearRange[0] && year <= yearRange[1]) {
+        if (year >= yearRange[0] && year < yearRange[1]) {
             const entities = entityExtractor(entry);
             entities.forEach(entityName => {
                 entityKm[entityName] = (entityKm[entityName] || 0) + entry[DIST_COLUMN];
