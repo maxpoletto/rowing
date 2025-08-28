@@ -89,10 +89,8 @@ async function loadData() {
 // Initialize UI components
 function initializeUI() {
     initializeTabs();
-    initializeYearAndSelects();
-    initializeDistanceSlider();
+    initializeSlidersAndSelects();
     initializeTable();
-    initializeStatistics();
 }
 
 // Tab functionality
@@ -139,57 +137,30 @@ function initializeTabs() {
 }
 
 // Initialize year slider and boat/rower selects
-function initializeYearAndSelects() {
+function initializeSlidersAndSelects() {
     const minYear = Math.min(...appData.years);
-    const maxYear = Math.max(...appData.years) + 1;
-    const currentYear = new Date().getFullYear();
-
-    // Initialize logbook year slider
-    const yearSlider = document.getElementById('year-slider');
-    const minSpan = document.getElementById('year-min');
-    const maxSpan = document.getElementById('year-max');
-
-    noUiSlider.create(yearSlider, {
-        start: [currentYear, currentYear+1],
-        connect: true,
-        range: {
-            'min': minYear,
-            'max': maxYear
-        },
-        step: 1,
-        tooltips: false,
-        format: {
-            to: value => Math.round(value),
-            from: value => Number(value)
-        },
-    });
-
-    yearSlider.noUiSlider.on('update', (values) => {
-        minSpan.textContent = values[0];
-        maxSpan.textContent = values[1];
-    });
-
-    yearSlider.noUiSlider.on('change', applyFilters);
+    const maxYear = Math.max(...appData.years);
 
     // Initialize statistics year sliders
     const statsSliders = [
-        { id: 'boat-year-slider', minSpan: 'boat-year-min', maxSpan: 'boat-year-max' },
-        { id: 'rower-year-slider', minSpan: 'rower-year-min', maxSpan: 'rower-year-max' },
-        { id: 'time-year-slider', minSpan: 'time-year-min', maxSpan: 'time-year-max' }
+        { id: 'year-slider', minSpan: 'year-min', maxSpan: 'year-max', change: applyFilters },
+        { id: 'dist-slider', minSpan: 'dist-min', maxSpan: 'dist-max', change: applyFilters,
+            start: [0, 100], range: { 'min': 0, '20%': 5, '40%': 10, '60%': 20, '80%': 50, 'max': 100 } },
+        { id: 'boat-year-slider', minSpan: 'boat-year-min', maxSpan: 'boat-year-max', change: updateStatistics },
+        { id: 'rower-year-slider', minSpan: 'rower-year-min', maxSpan: 'rower-year-max', change: updateStatistics },
+        { id: 'time-year-slider', minSpan: 'time-year-min', maxSpan: 'time-year-max', change: updateStatistics }
     ];
-
     statsSliders.forEach(config => {
         const slider = document.getElementById(config.id);
         const minSpan = document.getElementById(config.minSpan);
         const maxSpan = document.getElementById(config.maxSpan);
 
+        const start = config.start || [maxYear, maxYear+1];
+        const range = config.range || { 'min': minYear, 'max': maxYear+1 };
         noUiSlider.create(slider, {
-            start: [currentYear, currentYear],
+            start: start,
             connect: true,
-            range: {
-                'min': minYear,
-                'max': maxYear
-            },
+            range: range,
             step: 1,
             tooltips: false,
             format: {
@@ -203,7 +174,7 @@ function initializeYearAndSelects() {
             maxSpan.textContent = values[1];
         });
 
-        slider.noUiSlider.on('change', updateStatistics);
+        slider.noUiSlider.on('change', config.change);
     });
 
     // Populate boat select
@@ -232,40 +203,6 @@ function initializeYearAndSelects() {
         option.textContent = name;
         rowerSelect.appendChild(option);
     });
-}
-
-// Initialize distance slider
-function initializeDistanceSlider() {
-    const slider = document.getElementById('dist-slider');
-    const minSpan = document.getElementById('dist-min');
-    const maxSpan = document.getElementById('dist-max');
-
-    // Create logarithmic range: good resolution up to 20km, then coarser to 100km
-    noUiSlider.create(slider, {
-        start: [0, 100],
-        connect: true,
-        range: {
-            'min': 0,
-            '20%': 5,
-            '40%': 10,
-            '60%': 20,
-            '80%': 50,
-            'max': 100
-        },
-        step: 1,
-        tooltips: false, // Remove handle tooltips
-        format: {
-            to: value => Math.round(value),
-            from: value => Number(value)
-        }
-    });
-
-    slider.noUiSlider.on('update', (values) => {
-        minSpan.textContent = values[0];
-        maxSpan.textContent = values[1];
-    });
-
-    slider.noUiSlider.on('change', applyFilters);
 }
 
 // Setup event listeners
@@ -443,10 +380,6 @@ let statsTables = {
     boat: null,
     rower: null
 };
-
-function initializeStatistics() {
-    // Initialize Chart.js default settings
-}
 
 function createBarChart(canvasId, labels, data, existingChart) {
     if (existingChart) {

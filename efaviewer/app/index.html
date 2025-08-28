@@ -32,7 +32,7 @@
                             <label for="year-slider">Years:</label>
                         </div>
                         <div class="control-value"</div>
-                            1.1.<span class="year-value" id="year-min">2011</span>&nbsp;&ndash; 1.1.<span class="year-value" id="year-max">2025</span>
+                            1.1.<span class="year-value" id="year-min">2011</span>&nbsp;&ndash;&nbsp;1.1.<span class="year-value" id="year-max">2025</span>
                         </div>
                         <div class="year-slider-container">
                             <div id="year-slider" class="slider"></div>
@@ -66,17 +66,21 @@
                     <button class="stats-tab-button" data-stats-tab="km-over-time">Monthly kilometers</button>
                 </nav>
 
-                <!-- Total km by Boat -->
                 <div id="km-by-boat-tab" class="stats-tab-content active">
-                    <div class="controls stats-controls">
-                        <div class="control-group">
-                            <label for="boat-year-slider">Years:</label>
-                            <div id="boat-year-slider" class="slider"></div>
-                            <div class="slider-values">
-                                <span id="boat-year-min">2011</span> - <span id="boat-year-max">2025</span>
+                    <div class="controls-container">
+                        <div class="controls-grid">
+                            <div class="control-label">
+                                <label for="boat-year-slider">Years:</label>
+                            </div>
+                            <div class="control-value">
+                                1.1.<span id="boat-year-min">2011</span>&nbsp;&ndash;&nbsp;1.1.<span id="boat-year-max">2025</span>
+                            </div>
+                            <div class="year-slider-container">
+                                <div id="boat-year-slider" class="slider"></div>
                             </div>
                         </div>
                     </div>
+
                     <div class="chart-container">
                         <canvas id="boat-chart"></canvas>
                     </div>
@@ -84,14 +88,17 @@
                     </div>
                 </div>
 
-                <!-- Total km by Rower -->
                 <div id="km-by-rower-tab" class="stats-tab-content">
-                    <div class="controls stats-controls">
-                        <div class="control-group">
-                            <label for="rower-year-slider">Years:</label>
-                            <div id="rower-year-slider" class="slider"></div>
-                            <div class="slider-values">
-                                <span id="rower-year-min">2011</span> - <span id="rower-year-max">2025</span>
+                    <div class="controls-container">
+                        <div class="controls-grid">
+                            <div class="control-label">
+                                <label for="rower-year-slider">Years:</label>
+                            </div>
+                            <div class="control-value">
+                                1.1.<span id="rower-year-min">2011</span>&nbsp;&ndash;&nbsp;1.1.<span id="rower-year-max">2025</span>
+                            </div>
+                            <div class="year-slider-container">
+                                <div id="rower-year-slider" class="slider"></div>
                             </div>
                         </div>
                     </div>
