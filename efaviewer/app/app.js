@@ -150,7 +150,6 @@ function initializeTabs() {
     });
 }
 
-
 function initializeSliders() {
     appData.minYear = Math.min(...appData.years);
     appData.maxYear = Math.max(...appData.years);
@@ -162,12 +161,14 @@ function initializeSliders() {
             range: { 'min': 0, '20%': 5, '40%': 10, '60%': 20, '80%': 50, 'max': appData.maxDist } },
         { id: 'boat-year-slider', minSpan: 'boat-year-min', maxSpan: 'boat-year-max', change: updateStatistics },
         { id: 'rower-year-slider', minSpan: 'rower-year-min', maxSpan: 'rower-year-max', change: updateStatistics },
+        { id: 'rower-crew-size-slider', minSpan: 'rower-crew-size', change: updateStatistics,
+            start: [1], range: { 'min': 1, 'max': 8 } },
         { id: 'time-year-slider', minSpan: 'time-year-min', maxSpan: 'time-year-max', change: updateStatistics }
     ];
     statsSliders.forEach(config => {
         const slider = document.getElementById(config.id);
         const minSpan = document.getElementById(config.minSpan);
-        const maxSpan = document.getElementById(config.maxSpan);
+        const maxSpan = document.getElementById(config.maxSpan) || null;
 
         const start = config.start || [appData.maxYear, appData.maxYear+1];
         const range = config.range || { 'min': appData.minYear, 'max': appData.maxYear+1 };
@@ -185,7 +186,9 @@ function initializeSliders() {
 
         slider.noUiSlider.on('update', (values) => {
             minSpan.textContent = values[0];
-            maxSpan.textContent = values[1];
+            if (maxSpan) {
+                maxSpan.textContent = values[1];
+            }
         });
 
         slider.noUiSlider.on('change', config.change);
@@ -438,16 +441,13 @@ function createBarChart(canvasId, title, xtitle, ytitle, labels, data, existingC
 // Statistics: distance by entity
 ////////////////////////////////////////////////////////////////////////////
 
-function updateDistanceByEntity(yearRange, entityExtractor, canvasId, tableContainer, existingChart, existingTable) {
+function updateDistanceByEntity(yearRange, entityProcessor, canvasId, tableContainer, existingChart, existingTable) {
     const entityKm = {};
 
     appData.logbooks.forEach(entry => {
         const year = entry[YEAR_COLUMN];
         if (year >= yearRange[0] && year < yearRange[1]) {
-            const entities = entityExtractor(entry);
-            entities.forEach(entityName => {
-                entityKm[entityName] = (entityKm[entityName] || 0) + entry[DIST_COLUMN];
-            });
+            entityProcessor(entry, entityKm);
         }
     });
 
@@ -494,11 +494,14 @@ function updateKmByBoat() {
     const yearSlider = document.getElementById('boat-year-slider');
     const yearRange = yearSlider.noUiSlider.get().map(Number);
 
-    const boatExtractor = (entry) => [entry[BOAT_COLUMN]];
+    const boatProcessor = (entry, entityKm) => {
+        const boatName = entry[BOAT_COLUMN];
+        entityKm[boatName] = (entityKm[boatName] || 0) + entry[DIST_COLUMN];
+    };
 
     const { chart, table } = updateDistanceByEntity(
         yearRange,
-        boatExtractor,
+        boatProcessor,
         'boat-chart',
         '#boat-table',
         charts.boat,
@@ -509,15 +512,34 @@ function updateKmByBoat() {
     tables.boat = table;
 }
 
+function nchoosek(array, k) {
+    if (k === 0 || k > array.length) {
+        return [];
+    }
+    return array.reduce((acc, value, index, self) => {
+        if (k === 1) {
+            return acc.concat([[value]]);
+        }
+        return acc.concat(nchoosek(self.slice(index + 1), k - 1).map(combination => [value, ...combination]));
+    }, []);
+}
+
 function updateKmByRower() {
     const yearSlider = document.getElementById('rower-year-slider');
     const yearRange = yearSlider.noUiSlider.get().map(Number);
+    const crewSizeSlider = document.getElementById('rower-crew-size-slider');
+    const crewSize = Number(crewSizeSlider.noUiSlider.get());
 
-    const rowerExtractor = (entry) => entry[CREW_COLUMN].split(',').map(name => name.trim());
+    const crewProcessor = (entry, entityKm) => {
+        const crewMembers = entry[CREW_COLUMN].split(',').map(name => name.trim());
+        for (const crew of nchoosek(crewMembers, crewSize)) {
+            entityKm[crew] = (entityKm[crew] || 0) + entry[DIST_COLUMN];
+        }
+    };
 
     const { chart, table } = updateDistanceByEntity(
         yearRange,
-        rowerExtractor,
+        crewProcessor,
         'rower-chart',
         '#rower-table',
         charts.rower,
