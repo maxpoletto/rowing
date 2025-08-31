@@ -423,6 +423,10 @@ function createBarChart(canvasId, title, xtitle, ytitle, labels, data, existingC
                     title: {
                         display: xtitle !== null,
                         text: xtitle
+                    },
+                    ticks: {
+                        minRotation: 60,
+                        maxRotation: 60
                     }
                 },
                 y: {
@@ -441,7 +445,9 @@ function createBarChart(canvasId, title, xtitle, ytitle, labels, data, existingC
 // Statistics: distance by entity
 ////////////////////////////////////////////////////////////////////////////
 
-function updateDistanceByEntity(yearRange, entityProcessor, canvasId, tableContainer, existingChart, existingTable) {
+const MAX_CHART_VALUES = 20;
+const MAX_LABEL_LENGTH = 30;
+function updateDistanceByEntity(yearRange, entityProcessor, labelFormatter, canvasId, tableContainer, existingChart, existingTable) {
     const entityKm = {};
 
     appData.logbooks.forEach(entry => {
@@ -450,14 +456,12 @@ function updateDistanceByEntity(yearRange, entityProcessor, canvasId, tableConta
             entityProcessor(entry, entityKm);
         }
     });
-
     // Sort by distance
     const sortedData = Object.entries(entityKm)
         .sort((a, b) => b[1] - a[1]);
-
-    // Chart shows top 20
-    const chartLabels = sortedData.slice(0, 20).map(([name]) => name);
-    const chartData = sortedData.slice(0, 20).map(([, km]) => km);
+    // Chart shows top MAX_CHART_VALUES values
+    const chartLabels = sortedData.slice(0, MAX_CHART_VALUES).map(([name]) => labelFormatter ? labelFormatter(name) : name);
+    const chartData = sortedData.slice(0, MAX_CHART_VALUES).map(([, km]) => km);
     const chart = createBarChart(canvasId, null, null, 'Distance (km)', chartLabels, chartData, existingChart);
 
     let table = existingTable;
@@ -502,6 +506,7 @@ function updateKmByBoat() {
     const { chart, table } = updateDistanceByEntity(
         yearRange,
         boatProcessor,
+        null,
         'boat-chart',
         '#boat-table',
         charts.boat,
@@ -537,9 +542,28 @@ function updateKmByRower() {
         }
     };
 
+    // Format crew labels for chart labels. If the label is too long, replace first
+    // names with initials. If the label is still too long, truncate and add ellipsis.
+    const crewLabelFormatter = (label) => {
+        if (label.length <= MAX_LABEL_LENGTH) {
+            return label;
+        }
+        const items = label.split(',').map(item => {
+            const parts = item.split(/\s+/);
+            if (parts.length === 1) { return item; }
+            return parts[0][0] + '.' + parts.slice(1).join(' ');
+        });
+        let res = items.join(', ');
+        if (res.length > MAX_LABEL_LENGTH) {
+            res = res.slice(0, MAX_LABEL_LENGTH - 3) + '...';
+        }
+        return res;
+    };
+
     const { chart, table } = updateDistanceByEntity(
         yearRange,
         crewProcessor,
+        crewLabelFormatter,
         'rower-chart',
         '#rower-table',
         charts.rower,
