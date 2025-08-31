@@ -512,15 +512,15 @@ function updateKmByBoat() {
     tables.boat = table;
 }
 
-function nchoosek(array, k) {
+function kcombinations(array, k) {
     if (k === 0 || k > array.length) {
         return [];
     }
-    return array.reduce((acc, value, index, self) => {
+    return array.toSorted().reduce((acc, value, index, self) => {
         if (k === 1) {
             return acc.concat([[value]]);
         }
-        return acc.concat(nchoosek(self.slice(index + 1), k - 1).map(combination => [value, ...combination]));
+        return acc.concat(kcombinations(self.slice(index + 1), k - 1).map(combination => [value, ...combination]));
     }, []);
 }
 
@@ -532,7 +532,7 @@ function updateKmByRower() {
 
     const crewProcessor = (entry, entityKm) => {
         const crewMembers = entry[CREW_COLUMN].split(',').map(name => name.trim());
-        for (const crew of nchoosek(crewMembers, crewSize)) {
+        for (const crew of kcombinations(crewMembers, crewSize)) {
             entityKm[crew] = (entityKm[crew] || 0) + entry[DIST_COLUMN];
         }
     };
