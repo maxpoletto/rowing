@@ -229,7 +229,7 @@ header h1 {
     border-collapse: collapse;
 }
 
-.sortable-table-cell[data-column="crew"] {
+.sortable-table-cell[data-column="crew"], .sortable-table-cell[data-column="name"] {
     text-wrap: wrap;
 }
 
