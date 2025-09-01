@@ -456,11 +456,11 @@ function updateDistanceByEntity(yearRange, entityProcessor, labelFormatter, canv
             entityProcessor(entry, entityStats);
         }
     });
-    console.log(entityStats);
-    // Sort by distance
+
+    // Extract data, sort by distance
     const sortedData = Object.entries(entityStats).map(([name, stats]) => [name, stats[0], stats[1]]);
     sortedData.sort((a, b) => b[2] - a[2]);
-    console.log(sortedData);
+
     // Chart shows top MAX_CHART_VALUES values
     const chartLabels = sortedData.slice(0, MAX_CHART_VALUES).map(([name, ]) => labelFormatter ? labelFormatter(name) : name);
     const chartData = sortedData.slice(0, MAX_CHART_VALUES).map(([, , km]) => km);
