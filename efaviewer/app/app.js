@@ -448,20 +448,22 @@ function createBarChart(canvasId, title, xtitle, ytitle, labels, data, existingC
 const MAX_CHART_VALUES = 20;
 const MAX_LABEL_LENGTH = 30;
 function updateDistanceByEntity(yearRange, entityProcessor, labelFormatter, canvasId, tableContainer, existingChart, existingTable) {
-    const entityKm = {};
+    const entityStats = {};
 
     appData.logbooks.forEach(entry => {
         const year = entry[YEAR_COLUMN];
         if (year >= yearRange[0] && year < yearRange[1]) {
-            entityProcessor(entry, entityKm);
+            entityProcessor(entry, entityStats);
         }
     });
+    console.log(entityStats);
     // Sort by distance
-    const sortedData = Object.entries(entityKm)
-        .sort((a, b) => b[1] - a[1]);
+    const sortedData = Object.entries(entityStats).map(([name, stats]) => [name, stats[0], stats[1]]);
+    sortedData.sort((a, b) => b[2] - a[2]);
+    console.log(sortedData);
     // Chart shows top MAX_CHART_VALUES values
-    const chartLabels = sortedData.slice(0, MAX_CHART_VALUES).map(([name]) => labelFormatter ? labelFormatter(name) : name);
-    const chartData = sortedData.slice(0, MAX_CHART_VALUES).map(([, km]) => km);
+    const chartLabels = sortedData.slice(0, MAX_CHART_VALUES).map(([name, ]) => labelFormatter ? labelFormatter(name) : name);
+    const chartData = sortedData.slice(0, MAX_CHART_VALUES).map(([, , km]) => km);
     const chart = createBarChart(canvasId, null, null, 'Distance (km)', chartLabels, chartData, existingChart);
 
     let table = existingTable;
@@ -474,6 +476,12 @@ function updateDistanceByEntity(yearRange, entityProcessor, labelFormatter, canv
                     key: 'name',
                     label: 'Name',
                     type: 'string',
+                },
+                {
+                    key: 'count',
+                    label: 'Outings',
+                    type: 'number',
+                    width: '80px'
                 },
                 {
                     key: 'km',
@@ -498,9 +506,13 @@ function updateKmByBoat() {
     const yearSlider = document.getElementById('boat-year-slider');
     const yearRange = yearSlider.noUiSlider.get().map(Number);
 
-    const boatProcessor = (entry, entityKm) => {
+    const boatProcessor = (entry, entityStats) => {
         const boatName = entry[BOAT_COLUMN];
-        entityKm[boatName] = (entityKm[boatName] || 0) + entry[DIST_COLUMN];
+        if (!entityStats[boatName]) {
+            entityStats[boatName] = [0, 0];
+        }
+        entityStats[boatName][0]++; // Count
+        entityStats[boatName][1] += entry[DIST_COLUMN]; // Distance
     };
 
     const { chart, table } = updateDistanceByEntity(
@@ -535,10 +547,14 @@ function updateKmByRower() {
     const crewSizeSlider = document.getElementById('rower-crew-size-slider');
     const crewSize = Number(crewSizeSlider.noUiSlider.get());
 
-    const crewProcessor = (entry, entityKm) => {
+    const crewProcessor = (entry, entityStats) => {
         const crewMembers = entry[CREW_COLUMN].split(',').map(name => name.trim());
         for (const crew of kcombinations(crewMembers, crewSize)) {
-            entityKm[crew] = (entityKm[crew] || 0) + entry[DIST_COLUMN];
+            if (!entityStats[crew]) {
+                entityStats[crew] = [0, 0];
+            }
+            entityStats[crew][0]++; // Count
+            entityStats[crew][1] += entry[DIST_COLUMN]; // Distance
         }
     };
 
