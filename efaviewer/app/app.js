@@ -73,14 +73,24 @@ async function loadData() {
             return acc;
         }, {});
 
-        appData.logbooks = logbooks.map(entry => [
-            entry.year,
-            parseDate(entry.date),
-            formatBoat(entry.boat),
-            formatCrew(entry.crew),
-            entry.dist || 0,
-            formatDestination(entry.dest)
-        ]);
+        appData.logbooks = []
+        appData.onwater = []
+        logbooks.forEach(entry => {
+            const dist = entry.dist || 0;
+            const open = entry.open || false;
+            let record = [
+                entry.year,
+                parseDate(entry.date),
+                formatBoat(entry.boat),
+                formatCrew(entry.crew),
+            ]
+            if (open && dist === 0) {
+                appData.onwater.push(record);
+            } else {
+                record.push(dist, formatDestination(entry.dest));
+                appData.logbooks.push(record);
+            }
+        });
 
         // Extract unique years and sort them
         appData.years = [...new Set(logbooks.map(entry => entry.year))]

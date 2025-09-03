@@ -174,6 +174,8 @@ class EfaImporter:
             }
             if record.find("Distance") is not None:
                 dest_data["dist"] = self.parse_distance(record.find("Distance").text)
+            if record.find("Open") is not None and record.find("Open").text == "true":
+                dest_data["open"] = True
 
             self.destinations[dest_id] = dest_data
 
