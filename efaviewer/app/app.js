@@ -75,20 +75,33 @@ async function loadData() {
 
         appData.logbooks = []
         appData.onwater = []
+        const today = new Date();
         logbooks.forEach(entry => {
-            const dist = entry.dist || 0;
-            const open = entry.open || false;
-            let record = [
-                entry.year,
-                parseDate(entry.date),
-                formatBoat(entry.boat),
-                formatCrew(entry.crew),
-            ]
-            if (open && dist === 0) {
-                appData.onwater.push(record);
+            // The logs are "dirty". There are old entries that are still
+            // marked as open and have no end time (t1) but are obviously
+            // not on the water. So we also check if the date is today.
+            if (entry.open && !('t1' in entry)) {
+                const isToday = (() => {
+                    const entryDate = parseDate(entry.date);
+                    return entryDate.getFullYear() === today.getFullYear() &&
+                           entryDate.getMonth() === today.getMonth() &&
+                           entryDate.getDate() === today.getDate();
+                })();
+                if (isToday) {
+                    appData.onwater.push([
+                        formatBoat(entry.boat),
+                        formatCrew(entry.crew),
+                    ]);
+                }
             } else {
-                record.push(dist, formatDestination(entry.dest));
-                appData.logbooks.push(record);
+                appData.logbooks.push([
+                    entry.year,
+                    parseDate(entry.date),
+                    formatBoat(entry.boat),
+                    formatCrew(entry.crew),
+                    entry.dist || 0,
+                    formatDestination(entry.dest)
+                ]);
             }
         });
 
@@ -322,6 +335,27 @@ function initializeTable() {
         allowSorting: true,
         sort: { column: 'date', ascending: false },
         emptyMessage: 'No logbook entries found'
+    });
+
+    tables.onwater = new SortableTable({
+        container: '#onwater-table',
+        data: appData.onwater,
+        columns: [
+            {
+                key: 'boat',
+                label: 'Boat',
+                type: 'string',
+            },
+            {
+                key: 'crew',
+                label: 'Crew',
+                type: 'string',
+            }
+        ],
+        rowsPerPage: 50,
+        showPagination: true,
+        allowSorting: true,
+        emptyMessage: 'No boats are currently on the water'
     });
 }
 

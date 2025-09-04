@@ -174,8 +174,6 @@ class EfaImporter:
             }
             if record.find("Distance") is not None:
                 dest_data["dist"] = self.parse_distance(record.find("Distance").text)
-            if record.find("Open") is not None and record.find("Open").text == "true":
-                dest_data["open"] = True
 
             self.destinations[dest_id] = dest_data
 
@@ -343,6 +341,9 @@ class EfaImporter:
                         logger.debug(f"Full XML record: {ET.tostring(record, encoding='utf-8').decode('utf-8')}")
                         continue
                     entry["dist"] = distance
+
+                if record.find("Open") is not None and record.find("Open").text == "true":
+                    entry["open"] = True
 
                 # Session type
                 session_type = record.find("SessionType")
