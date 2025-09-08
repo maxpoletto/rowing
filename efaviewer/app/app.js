@@ -502,7 +502,7 @@ function updateDistanceByEntity(yearRange, entityProcessor, labelFormatter, canv
     });
 
     // Extract data, sort by distance
-    const sortedData = Object.entries(entityStats).map(([name, stats]) => [name, stats[0], stats[1]]);
+    const sortedData = Object.entries(entityStats).map(([name, stats]) => [name, stats[0], stats[1], stats[2]]);
     sortedData.sort((a, b) => b[2] - a[2]);
 
     // Chart shows top MAX_CHART_VALUES values
@@ -530,6 +530,12 @@ function updateDistanceByEntity(yearRange, entityProcessor, labelFormatter, canv
                 {
                     key: 'km',
                     label: 'Kilometers',
+                    type: 'number',
+                    width: '80px'
+                },
+                {
+                    key: 'avg',
+                    label: 'Avg km',
                     type: 'number',
                     width: '80px'
                 }
@@ -595,10 +601,11 @@ function updateKmByRower() {
         const crewMembers = entry[CREW_COLUMN].split(',').map(name => name.trim());
         for (const crew of kcombinations(crewMembers, crewSize)) {
             if (!entityStats[crew]) {
-                entityStats[crew] = [0, 0];
+                entityStats[crew] = [0, 0, 0];
             }
             entityStats[crew][0]++; // Count
             entityStats[crew][1] += entry[DIST_COLUMN]; // Distance
+            entityStats[crew][2] = entityStats[crew][1] / entityStats[crew][0]; // Average distance
         }
     };
 
