@@ -24,27 +24,29 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0px 20px 0px 20px;
+    position: relative;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 0px;
     position: relative;
 }
 
 /* Logo Container */
 .logo-container {
     position: absolute;
-    top: 40px;
-    right: 20px;
-    z-index: 10;
+    top: 0px;
+    right: 0px;
+    display: flex;
+    align-items: top;
 }
 
 .logo {
     height: 130px;
     width: auto;
-}
-
-/* Header */
-header {
-    text-align: center;
-    margin-bottom: 20px;
 }
 
 header h1 {
@@ -297,17 +299,24 @@ header h1 {
         padding: 10px;
     }
 
-    .logo-container {
-        top: 10px;
-        right: 10px;
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
     }
 
-    .belvoir-logo {
-        height: 80px;
+    .logo-container {
+        position: static;
+        order: 1;
+    }
+
+    .logo {
+        height: 40px;
     }
 
     header h1 {
-        font-size: 2rem;
+        font-size: 1.2rem;
     }
 
     .controls {
