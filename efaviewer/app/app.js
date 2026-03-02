@@ -559,10 +559,11 @@ function updateKmByBoat() {
     const boatProcessor = (entry, entityStats) => {
         const boatName = entry[BOAT_COLUMN];
         if (!entityStats[boatName]) {
-            entityStats[boatName] = [0, 0];
+            entityStats[boatName] = [0, 0, 0];
         }
         entityStats[boatName][0]++; // Count
         entityStats[boatName][1] += entry[DIST_COLUMN]; // Distance
+        entityStats[boatName][2] = Math.round(10 * entityStats[boatName][1] / entityStats[boatName][0]) / 10; // Average distance
     };
 
     const { chart, table } = updateDistanceByEntity(
@@ -605,7 +606,7 @@ function updateKmByRower() {
             }
             entityStats[crew][0]++; // Count
             entityStats[crew][1] += entry[DIST_COLUMN]; // Distance
-            entityStats[crew][2] = entityStats[crew][1] / entityStats[crew][0]; // Average distance
+            entityStats[crew][2] = Math.round(10 * entityStats[crew][1] / entityStats[crew][0]) / 10; // Average distance
         }
     };
 
