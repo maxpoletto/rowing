@@ -52,6 +52,10 @@ async function loadData() {
             fetch('data/destinations.json')
         ]);
 
+        for (const r of [logbooksResponse, boatsResponse, personsResponse, destinationsResponse]) {
+            if (!r.ok) throw new Error(`Failed to fetch ${r.url}: ${r.status}`);
+        }
+
         const logbooks = await logbooksResponse.json();
         const boats = await boatsResponse.json();
         const persons = await personsResponse.json();
@@ -285,6 +289,23 @@ function formatDestination(destId) {
     return dest ? dest.name : 'Unknown';
 }
 
+function matchesSearchTerms(entry, terms) {
+    if (terms.length === 0) return true;
+    const boat = entry[BOAT_COLUMN].toLowerCase();
+    const crew = entry[CREW_COLUMN].toLowerCase();
+    const dest = entry[DEST_COLUMN].toLowerCase();
+    return terms.every(term => boat.includes(term) || crew.includes(term) || dest.includes(term));
+}
+
+function accumulateStats(entityStats, key, dist) {
+    if (!entityStats[key]) {
+        entityStats[key] = [0, 0, 0];
+    }
+    entityStats[key][0]++;
+    entityStats[key][1] += dist;
+    entityStats[key][2] = Math.round(10 * entityStats[key][1] / entityStats[key][0]) / 10;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // Logbook
 ////////////////////////////////////////////////////////////////////////////
@@ -386,17 +407,7 @@ function applyLogbookFilters() {
                 return false;
             }
 
-            // Search filter
-            if (terms.length > 0) {
-                const boat = entry[BOAT_COLUMN];
-                const boatName = boat ? boat.toLowerCase() : '';
-                const crewNames = entry[CREW_COLUMN].toLowerCase();
-                const dest = entry[DEST_COLUMN].toLowerCase();
-                if (!terms.every(term => boatName.includes(term) || crewNames.includes(term) || dest.includes(term))) {
-                    return false;
-                }
-            }
-            return true;
+            return matchesSearchTerms(entry, terms);
         })
     }, FILTER_TIMEOUT_MS);
 }
@@ -431,6 +442,9 @@ function updateStatistics() {
     }
 }
 
+const CHART_COLOR = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+const CHART_BORDER_COLOR = getComputedStyle(document.documentElement).getPropertyValue('--chart-border-color').trim();
+
 function createBarChart(canvasId, title, xtitle, ytitle, labels, data, existingChart) {
     if (existingChart) {
         existingChart.destroy();
@@ -444,8 +458,8 @@ function createBarChart(canvasId, title, xtitle, ytitle, labels, data, existingC
             datasets: [{
                 label: 'Total km',
                 data: data,
-                backgroundColor: '#2c5aa0',
-                borderColor: '#1a3d6b',
+                backgroundColor: CHART_COLOR,
+                borderColor: CHART_BORDER_COLOR,
                 borderWidth: 1
             }]
         },
@@ -557,13 +571,7 @@ function updateKmByBoat() {
     const yearRange = yearSlider.noUiSlider.get().map(Number);
 
     const boatProcessor = (entry, entityStats) => {
-        const boatName = entry[BOAT_COLUMN];
-        if (!entityStats[boatName]) {
-            entityStats[boatName] = [0, 0, 0];
-        }
-        entityStats[boatName][0]++; // Count
-        entityStats[boatName][1] += entry[DIST_COLUMN]; // Distance
-        entityStats[boatName][2] = Math.round(10 * entityStats[boatName][1] / entityStats[boatName][0]) / 10; // Average distance
+        accumulateStats(entityStats, entry[BOAT_COLUMN], entry[DIST_COLUMN]);
     };
 
     const { chart, table } = updateDistanceByEntity(
@@ -601,12 +609,7 @@ function updateKmByRower() {
     const crewProcessor = (entry, entityStats) => {
         const crewMembers = entry[CREW_COLUMN].split(',').map(name => name.trim());
         for (const crew of kcombinations(crewMembers, crewSize)) {
-            if (!entityStats[crew]) {
-                entityStats[crew] = [0, 0, 0];
-            }
-            entityStats[crew][0]++; // Count
-            entityStats[crew][1] += entry[DIST_COLUMN]; // Distance
-            entityStats[crew][2] = Math.round(10 * entityStats[crew][1] / entityStats[crew][0]) / 10; // Average distance
+            accumulateStats(entityStats, crew, entry[DIST_COLUMN]);
         }
     };
 
@@ -659,14 +662,8 @@ function updateKmOverTime() {
             return;
         }
 
-        // Search filter
-        if (terms.length > 0) {
-            const boatName = entry[BOAT_COLUMN].toLowerCase();
-            const crewNames = entry[CREW_COLUMN].toLowerCase();
-            const destName = entry[DEST_COLUMN].toLowerCase();
-            if (!terms.every(term => boatName.includes(term) || crewNames.includes(term) || destName.includes(term))) {
-                return;
-            }
+        if (!matchesSearchTerms(entry, terms)) {
+            return;
         }
 
         const d = entry[DATE_COLUMN];
