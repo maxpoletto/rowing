@@ -41,7 +41,7 @@ header {
     top: 0px;
     right: 0px;
     display: flex;
-    align-items: top;
+    align-items: flex-start;
 }
 
 .logo {
@@ -108,24 +108,12 @@ header h1 {
     display: grid;
     grid-template-columns: auto auto 1fr;
     gap: 15px 20px;
-    align-items: top;
-}
-
-.stats-controls {
-    display: flex;
-    flex-direction: row;
-    gap: 50px;
     align-items: start;
-}
-
-.control-group {
-    display: flex;
-    flex-direction: column;
 }
 
 .control-label, .control-value {
     font-weight: 600;
-    color: #2c5aa0;
+    color: var(--primary-color);
     display: flex;
     align-items: center;
     height: 100%;
@@ -145,10 +133,6 @@ header h1 {
 .controls-container input:focus {
     outline: none;
     border-color: var(--primary-color);
-}
-
-.control-group select[multiple] {
-    min-height: 120px;
 }
 
 .slider {
@@ -182,10 +166,6 @@ header h1 {
 
 .noUi-handle:active {
     cursor: grabbing;
-}
-
-.noUi-handle:before, .noUi-handle:after {
-    display: none;
 }
 
 .noUi-handle:before,
@@ -317,20 +297,6 @@ header h1 {
 
     header h1 {
         font-size: 1.2rem;
-    }
-
-    .controls {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-
-    .search-distance-group {
-        gap: 15px;
-    }
-
-    .reset-button-container {
-        height: auto;
-        margin-top: 10px;
     }
 
     .reset-btn {
