@@ -13,6 +13,11 @@ from typing import Dict, List, Optional, Any, Set, Tuple
 import re
 from collections import defaultdict
 
+from efa_parser import (
+    parse_boats, parse_persons, parse_destinations, parse_distance,
+    format_person_name,
+)
+
 
 class EfaViewer:
     def __init__(self):
@@ -22,125 +27,18 @@ class EfaViewer:
 
     def load_boats(self, boats_file: str):
         """Load boats from efa2boats file"""
-        tree = ET.parse(boats_file)
-        root = tree.getroot()
-
-        for record in root.findall(".//record"):
-            boat_id = record.find("Id").text
-            name = record.find("Name").text
-            name_affix = record.find("NameAffix")
-
-            # Handle boat variants
-            last_variant = int(record.find("LastVariant").text)
-            type_seats = record.find("TypeSeats").text.split(";")
-            type_rigging = record.find("TypeRigging").text.split(";")
-            type_coxing = record.find("TypeCoxing").text.split(";")
-
-            # Skip boats with inconsistent variant counts
-            if len(type_seats) != len(type_rigging) or len(type_seats) != len(type_coxing):
-                continue
-
-            n_variants = len(type_seats)
-
-            for variant in range(1, n_variants + 1):
-                variant_id = f"{boat_id}-v{variant}"
-
-                boat_data = {
-                    "id": variant_id,
-                    "original_id": boat_id,
-                    "name": name,
-                    "variant": variant,
-                    "seats": self._parse_seats(type_seats[variant - 1]),
-                    "rigging": type_rigging[variant - 1].lower(),
-                    "coxing": type_coxing[variant - 1].lower(),
-                }
-
-                if name_affix is not None:
-                    boat_data["suffix"] = name_affix.text
-
-                self.boats[variant_id] = boat_data
-                # Also store by original ID for lookup
-                self.boats[boat_id] = boat_data
+        self.boats = parse_boats(boats_file)
+        # Also store by original ID for lookup
+        for variant_id, boat in list(self.boats.items()):
+            self.boats[boat["oid"]] = boat
 
     def load_persons(self, persons_file: str):
         """Load persons from efa2persons file"""
-        tree = ET.parse(persons_file)
-        root = tree.getroot()
-
-        for record in root.findall(".//record"):
-            person_id = record.find("Id").text
-            first_name_elem = record.find("FirstName")
-            last_name_elem = record.find("LastName")
-            gender = record.find("Gender").text
-
-            # Skip archived persons
-            last_name = last_name_elem.text if last_name_elem is not None else None
-            if last_name and last_name.startswith("archiveID:"):
-                continue
-
-            first_name = first_name_elem.text if first_name_elem is not None else None
-
-            person_data = {
-                "id": person_id,
-                "first_name": first_name,
-                "last_name": last_name,
-                "gender": gender.lower(),
-                "full_name": self._format_person_name(first_name, last_name)
-            }
-
-            self.persons[person_id] = person_data
+        self.persons = parse_persons(persons_file)
 
     def load_destinations(self, destinations_file: str):
         """Load destinations from efa2destinations file"""
-        tree = ET.parse(destinations_file)
-        root = tree.getroot()
-
-        for record in root.findall(".//record"):
-            dest_id = record.find("Id").text
-            name = record.find("Name").text
-
-            dest_data = {
-                "id": dest_id,
-                "name": name,
-            }
-
-            distance_elem = record.find("Distance")
-            if distance_elem is not None:
-                dest_data["distance"] = self._parse_distance(distance_elem.text)
-
-            self.destinations[dest_id] = dest_data
-
-    def _parse_seats(self, seats_str: str) -> int:
-        """Parse seats string like '4X', '8', '2' and return integer"""
-        if not seats_str or seats_str == "unknown":
-            return 0
-
-        import re
-        match = re.search(r'(\d+)', seats_str)
-        if match:
-            return int(match.group(1))
-        return 0
-
-    def _parse_distance(self, distance_str: str) -> Optional[int]:
-        """Parse distance string and return rounded km as integer"""
-        if not distance_str:
-            return None
-
-        import re
-        match = re.search(r'(\d+(?:\.\d+)?)', distance_str)
-        if match:
-            return round(float(match.group(1)))
-        return None
-
-    def _format_person_name(self, first_name: str, last_name: str) -> str:
-        """Format person name for display"""
-        if first_name and last_name:
-            return f"{first_name} {last_name}"
-        elif last_name:
-            return last_name
-        elif first_name:
-            return first_name
-        return "Unknown"
+        self.destinations = parse_destinations(destinations_file)
 
     def _resolve_boat_name(self, boat_id: str, variant: int = None) -> str:
         """Resolve boat ID to name"""
@@ -149,28 +47,29 @@ class EfaViewer:
             if variant_id in self.boats:
                 boat = self.boats[variant_id]
                 suffix = f" ({boat['suffix']})" if 'suffix' in boat else ""
-                rigging = f" - {boat['rigging'].title()}" if boat['rigging'] != 'unknown' else ""
-                return f"{boat['name']}{suffix}{rigging}"
+                rig = f" - {boat['rig'].title()}" if boat['rig'] != 'unknown' else ""
+                return f"{boat['name']}{suffix}{rig}"
 
         if boat_id in self.boats:
             boat = self.boats[boat_id]
             suffix = f" ({boat['suffix']})" if 'suffix' in boat else ""
-            rigging = f" - {boat['rigging'].title()}" if boat['rigging'] != 'unknown' else ""
-            return f"{boat['name']}{suffix}{rigging}"
+            rig = f" - {boat['rig'].title()}" if boat['rig'] != 'unknown' else ""
+            return f"{boat['name']}{suffix}{rig}"
 
         return f"Unknown Boat ({boat_id})"
 
     def _resolve_person_name(self, person_id: str) -> str:
         """Resolve person ID to name"""
         if person_id in self.persons:
-            return self.persons[person_id]["full_name"]
+            p = self.persons[person_id]
+            return format_person_name(p.get("fn"), p.get("ln"))
         return f"Unknown Person ({person_id})"
 
     def _resolve_destination_name(self, dest_id: str) -> str:
         """Resolve destination ID to name"""
         if dest_id in self.destinations:
             dest = self.destinations[dest_id]
-            distance_info = f" ({dest['distance']}km)" if 'distance' in dest else ""
+            distance_info = f" ({dest['dist']}km)" if 'dist' in dest else ""
             return f"{dest['name']}{distance_info}"
         return f"Unknown Destination ({dest_id})"
 
@@ -244,15 +143,18 @@ class EfaViewer:
 
         return matches
 
+    def _person_names(self) -> List[Tuple[str, str]]:
+        """Return (person_id, full_name) pairs for all persons."""
+        return [(pid, format_person_name(p.get("fn"), p.get("ln")))
+                for pid, p in self.persons.items()]
+
     def find_similar_names(self, threshold: int = 2) -> Dict[str, List[Tuple[str, str, int]]]:
         """Find clusters of similar person names within edit distance threshold"""
-        names = [(person_id, person["full_name"]) for person_id, person in self.persons.items()]
-        return self._find_similar_names_generic(names, threshold)
+        return self._find_similar_names_generic(self._person_names(), threshold)
 
     def find_names_by_pattern(self, pattern: str) -> List[Tuple[str, str]]:
         """Find person names matching a regex pattern"""
-        names = [(person_id, person["full_name"]) for person_id, person in self.persons.items()]
-        return self._find_names_by_pattern_generic(names, pattern)
+        return self._find_names_by_pattern_generic(self._person_names(), pattern)
 
     def extract_names_from_logbook(self, logbook_file: str) -> List[Tuple[str, str]]:
         """Extract all names from logbook entries, returning (name, source_info) tuples"""

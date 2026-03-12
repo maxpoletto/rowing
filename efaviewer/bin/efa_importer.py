@@ -18,6 +18,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from efa_parser import parse_boats, parse_persons, parse_destinations, parse_distance
+
 logger = logging.getLogger(__name__)
 
 class EfaImporter:
@@ -43,28 +45,6 @@ class EfaImporter:
         self.former_counter += 1
         return f"former-{self.former_counter:06d}"
 
-    def parse_distance(self, distance_str: str) -> Optional[int]:
-        """Parse distance string and return rounded km as integer"""
-        if not distance_str:
-            return 0
-
-        # Extract number from strings like "8 km", "10.5 km"
-        match = re.search(r'(\d+(?:\.\d+)?)', distance_str)
-        if match:
-            return round(float(match.group(1)))
-        return 0
-
-    def parse_seats(self, seats_str: str) -> int:
-        """Parse seats string like '4X', '8', '2' and return integer"""
-        if not seats_str or seats_str == "unknown":
-            return 0
-
-        # Extract number from strings like "4X", "8", "2"
-        match = re.search(r'(\d+)', seats_str)
-        if match:
-            return int(match.group(1))
-        return 0
-
     def parse_date(self, date_str: str) -> Dict[str, Any]:
         """Parse DD.MM.YYYY date and extract year"""
         try:
@@ -79,103 +59,19 @@ class EfaImporter:
     def process_boats(self, xml_file: str):
         """Process boats.efa2boats file"""
         logger.info("Processing boats...")
-
-        tree = ET.parse(xml_file)
-        root = tree.getroot()
-
-        for record in root.findall(".//record"):
-            boat_id = record.find("Id").text
-            name = record.find("Name").text
-            name_affix = record.find("NameAffix")
-
-            # Handle boat variants and possible errors
-            last_variant = int(record.find("LastVariant").text)
-            type_seats = record.find("TypeSeats").text.split(";")
-            type_rigging = record.find("TypeRigging").text.split(";")
-            type_coxing = record.find("TypeCoxing").text.split(";")
-
-            if len(type_seats) != len(type_rigging) or len(type_seats) != len(type_coxing):
-                logger.warning(f"Boat {name} ({boat_id}) has inconsistent variant counts: skipping")
-                logger.debug(f"Full XML record: {ET.tostring(record, encoding='utf-8').decode('utf-8')}")
-                continue
-
-            n_variants = len(type_seats)
-            if n_variants != last_variant:
-                logger.warning(f"Boat {name} ({boat_id}) has {n_variants} variants but LastVariant={last_variant}: using {n_variants}")
-
-            for variant in range(1, n_variants + 1):
-                variant_id = f"{boat_id}-v{variant}"
-
-                boat_data = {
-                    "id": variant_id,
-                    "oid": boat_id,
-                    "name": name,
-                    "size": self.parse_seats(type_seats[variant - 1]),
-                    "rig": type_rigging[variant - 1].lower(),
-                    "cox": type_coxing[variant - 1].lower(),
-                    "fmr": False
-                }
-
-                if name_affix is not None:
-                    boat_data["suffix"] = name_affix.text
-
-                self.boats[variant_id] = boat_data
+        self.boats = parse_boats(xml_file)
+        for boat in self.boats.values():
+            boat["fmr"] = False
 
     def process_persons(self, xml_file: str):
         """Process persons.efa2persons file"""
-        logger.info(f"Processing persons...")
-
-        tree = ET.parse(xml_file)
-        root = tree.getroot()
-
-        for record in root.findall(".//record"):
-            person_id = record.find("Id").text
-            first_name_elem = record.find("FirstName")
-            last_name_elem = record.find("LastName")
-            gender = record.find("Gender").text
-
-            # Not all records have FirstName and LastName
-            last_name = last_name_elem.text if last_name_elem is not None else None
-            first_name = first_name_elem.text if first_name_elem is not None else None
-
-            # Skip archived persons (placeholders for deleted members)
-            if last_name and last_name.startswith("archiveID:"):
-                continue
-
-            person_data = {
-                "id": person_id,
-                "sex": 'm' if gender.lower() == 'male' else 'f' if gender.lower() == 'female' else 'u',
-                # We record these but unclear what these mean in EFA, since persons
-                # with these flags still appear in logbooks.
-                "del": record.find("Deleted") is not None,
-                "hid": record.find("Invisible") is not None,
-            }
-            if first_name:
-                person_data["fn"] = first_name
-            if last_name:
-                person_data["ln"] = last_name
-
-            self.persons[person_id] = person_data
+        logger.info("Processing persons...")
+        self.persons = parse_persons(xml_file)
 
     def process_destinations(self, xml_file: str):
         """Process destinations.efa2destinations file"""
-        logger.info(f"Processing destinations...")
-
-        tree = ET.parse(xml_file)
-        root = tree.getroot()
-
-        for record in root.findall(".//record"):
-            dest_id = record.find("Id").text
-            name = record.find("Name").text
-
-            dest_data = {
-                "id": dest_id,
-                "name": name,
-            }
-            if record.find("Distance") is not None:
-                dest_data["dist"] = self.parse_distance(record.find("Distance").text)
-
-            self.destinations[dest_id] = dest_data
+        logger.info("Processing destinations...")
+        self.destinations = parse_destinations(xml_file)
 
     def resolve_or_create_entity(self, entity_id: str, entity_type: str, name: str = None) -> str:
         """Resolve entity ID or create former entity if referenced by name"""
@@ -334,7 +230,7 @@ class EfaImporter:
                 # Distance
                 distance_elem = record.find("Distance")
                 if distance_elem is not None:
-                    distance = self.parse_distance(distance_elem.text)
+                    distance = parse_distance(distance_elem.text)
                     if distance > self.max_distance:
                         self.stats["excessive_distances"] += 1
                         logger.warning(f"Found entry with distance {distance}km, skipping")
@@ -457,10 +353,8 @@ def main():
 
     # Set up logging
     log_level = logging.INFO
-    if args.verbose == 1:
+    if args.verbose >= 1:
         log_level = logging.DEBUG
-    elif args.verbose > 1:
-        log_level = logging.TRACE
     logging.basicConfig(level=log_level, format="%(levelname)s: %(message)s")
 
     # Expand globs for logbooks
