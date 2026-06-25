@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geschichte des President's Cup des SRV</title>
+    <link rel="stylesheet" href="../common/common.css">
+    <script src="../common/d3.v7.9.0.min.js"></script>
+</head>
+
+<body>
+    <div id="main-container">
+        <header>
+            <h1>History of the <em>President's Cup</em></h1>
+            <p class="subtitle">(Best club of the Swiss rowing season, 2006&ndash;2026)</p>
+            <div class="info-section">
+                <p>For rules and other information, see <a href="https://www.swissrowing.ch"
+                        target="_blank">Swiss Rowing</a>.</p>
+                <p class="instructions">Click on or hover over any of the lines, or click one or more of the club
+                    buttons below.</p>
+            </div>
+        </header>
+        <div id="chart"></div>
+        <div id="chart-controls">
+            <button id="clear-selection" class="clear-button">Clear Selection</button>
+        </div>
+        <div id="controls"></div>
+    </div>
+    <script src="../common/common.js"></script>
+    <script>
+        renderPreiseChart({ csvUrl: "pc-history.csv" });
+    </script>
+</body>
+
+</html>
