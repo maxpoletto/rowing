@@ -39,6 +39,7 @@ function renderPreiseChart(config) {
         .style("opacity", 0);
 
     let selectedClubs = new Set();
+    let normalized = false;  // toggled by the "Normalized" checkbox
 
     d3.csv(config.csvUrl).then(function (data) {
         const processedData = data.map(d => ({
@@ -51,6 +52,14 @@ function renderPreiseChart(config) {
         // Get unique years and clubs
         const years = [...new Set(processedData.map(d => d.year))].sort();
         const clubs = [...new Set(processedData.map(d => d.club))].sort();
+
+        // Winner (max) points per year, for the "Normalized" view.
+        const maxByYear = new Map();
+        years.forEach(year => {
+            maxByYear.set(year, d3.max(processedData.filter(d => d.year === year), d => d.points));
+        });
+        // Plotted value: raw points, or % of that year's winner when normalized.
+        const yValue = d => normalized ? (d.points / maxByYear.get(d.year)) * 100 : d.points;
 
         // Create mapping from short names to long names
         const clubLongNames = new Map();
@@ -129,7 +138,7 @@ function renderPreiseChart(config) {
         // Create line generator
         const line = d3.line()
             .x(d => xScale(d.year))
-            .y(d => yScale(d.points))
+            .y(d => yScale(yValue(d)))
             .curve(d3.curveLinear);
 
         // Add axes
@@ -173,7 +182,7 @@ function renderPreiseChart(config) {
             .enter().append("circle")
             .attr("class", "dot")
             .attr("cx", d => xScale(d.year))
-            .attr("cy", d => yScale(d.points))
+            .attr("cy", d => yScale(yValue(d)))
             .attr("r", DOTWIDTH_NORMAL)
             .attr("fill", d => colorScale(d.club))
             .attr("stroke", "#fff")
@@ -219,7 +228,7 @@ function renderPreiseChart(config) {
                     svg.append("text")
                         .attr("class", "permanent-tooltip")
                         .attr("x", xScale(lastPoint.year) + 10)
-                        .attr("y", yScale(lastPoint.points))
+                        .attr("y", yScale(yValue(lastPoint)))
                         .attr("dy", "0.35em")
                         .style("font-size", "14px")
                         .style("font-weight", "bold")
@@ -227,6 +236,16 @@ function renderPreiseChart(config) {
                         .text(club);
                 }
             });
+        }
+
+        // Re-encode the y-axis when the "Normalized" toggle changes.
+        function applyYEncoding() {
+            yScale.domain([0, normalized ? 100 : d3.max(processedData, d => d.points)]);
+            svg.select(".y-axis").call(d3.axisLeft(yScale));
+            svg.select(".y-axis-label").text(normalized ? "% of winner" : "Points");
+            lines.attr("d", d => line(d.values));
+            points.selectAll(".dot").attr("cy", d => yScale(yValue(d)));
+            updatePermanentTooltips();
         }
 
         // Add line interactions
@@ -248,8 +267,11 @@ function renderPreiseChart(config) {
         points.selectAll(".dot")
             .on("mouseover", function (event, d) {
                 const rank = ranksByYear.get(d.year).get(d.club);
+                const valueText = normalized
+                    ? `${yValue(d).toFixed(1)}% of winner`
+                    : `${d.points} Points`;
                 tooltip.transition().duration(200).style("opacity", 0.9);
-                tooltip.html(`${d.club}<br/>${d.year}: ${d.points} Points (Rank ${rank})`)
+                tooltip.html(`${d.club}<br/>${d.year}: ${valueText} (Rank ${rank})`)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 28) + "px");
             })
@@ -293,11 +315,28 @@ function renderPreiseChart(config) {
             // Update points
             points.selectAll(".dot")
                 .attr("cx", d => xScale(d.year))
-                .attr("cy", d => yScale(d.points));
+                .attr("cy", d => yScale(yValue(d)));
 
             // Update permanent tooltips
             updatePermanentTooltips();
+
+            positionNormalizeToggle();
         }
+
+        // Align the "Normalized" toggle with the left edge of the leftmost
+        // button column. The grid is full-width but centers its fixed-width
+        // columns, so we measure the first button itself (its position shifts
+        // with the column count at each breakpoint).
+        function positionNormalizeToggle() {
+            const firstButton = document.querySelector(".club-button");
+            const toggle = document.getElementById("normalize-toggle");
+            const controls = document.getElementById("chart-controls");
+            if (!firstButton || !toggle || !controls) return;
+            const offset = firstButton.getBoundingClientRect().left
+                - controls.getBoundingClientRect().left;
+            toggle.style.left = offset + "px";
+        }
+
         // Handle resize and orientation changes
         let resizeTimeout;
         window.addEventListener('resize', function () {
@@ -335,6 +374,17 @@ function renderPreiseChart(config) {
             updateSelection();
             tooltip.transition().duration(500).style("opacity", 0);
         });
+
+        // "Normalized" toggle: show points as a percentage of the year's winner.
+        const normalizeBox = d3.select("#normalize-checkbox");
+        normalized = normalizeBox.property("checked");  // sync if browser restored state
+        normalizeBox.on("change", function () {
+            normalized = this.checked;
+            applyYEncoding();
+        });
+        applyYEncoding();
+
+        positionNormalizeToggle();
 
         // Add handlers to dismiss tooltips on mobile.
         d3.select("#chart svg").on("click", function (event) {

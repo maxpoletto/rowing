@@ -80,8 +80,28 @@ header h1 em {
 }
 
 #chart-controls {
+    position: relative;
     text-align: center;
     margin: 20px 0 0 0;
+}
+
+#normalize-toggle {
+    position: absolute;
+    /* left is set from JS to align with the button grid's left edge;
+       this is the fallback before the script runs. */
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+}
+
+#normalize-toggle input {
+    cursor: pointer;
+    vertical-align: middle;
+    margin-right: 4px;
 }
 
 .clear-button {
